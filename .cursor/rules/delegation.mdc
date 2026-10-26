@@ -1,0 +1,22 @@
+---
+description: Orchestrator policy - delegate cheap work to subagents to save tokens
+alwaysApply: true
+---
+
+# Delegation policy
+
+The main agent is the orchestrator. It plans, defines interfaces, reviews, and owns risky code. Routine work goes to subagents in `.cursor/agents/`.
+
+| Task | Who |
+|---|---|
+| Finding files, reading docs, package API lookups | `scout` |
+| pub get, build_runner, analyze, test runs, lint fixes, renames, boilerplate by example | `worker` |
+| Screens, widgets, providers, models, repositories, tests against fixed interfaces | `coder` |
+| Architecture, interfaces, security, SSH, remote command execution, LLM prompts, final review | orchestrator itself |
+
+Rules:
+- Never pass a `model` to Task other than the one defined in the subagent file. Never pick `*-max`, `*-fast`, `opus`, or `sol` models for subagents.
+- Do not delegate tasks smaller than a couple of tool calls; doing them directly is cheaper than a fresh subagent context.
+- Each delegation prompt must be self-contained: goal, exact file paths, interfaces to implement, acceptance check (`flutter analyze` / `flutter test`).
+- Never delegate: `lib/core/security/**`, `lib/features/ssh/**`, anything that executes commands on a VDS, secret handling, the AI command-confirmation flow.
+- Review every subagent result (diff + check output) before reporting to the user; subagents can claim success incorrectly.
