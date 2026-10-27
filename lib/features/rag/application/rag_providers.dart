@@ -32,7 +32,7 @@ class RagSettingsController extends _$RagSettingsController {
 
 /// Ready-to-use client, or null until a key is saved. Rebuilt whenever the
 /// settings change.
-@riverpod
+@Riverpod(keepAlive: true)
 Future<IRagService?> ragService(Ref ref) async {
   await ref.watch(ragSettingsControllerProvider.future);
   final config = await ref.read(ragSettingsRepositoryProvider).loadConfig();

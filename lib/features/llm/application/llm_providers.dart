@@ -52,7 +52,7 @@ class LlmSettingsController extends _$LlmSettingsController {
 
 /// Ready-to-use model client, or null until settings and key are complete.
 /// Rebuilt whenever settings change.
-@riverpod
+@Riverpod(keepAlive: true)
 Future<ILLMService?> llmService(Ref ref) async {
   await ref.watch(llmSettingsControllerProvider.future);
   final config = await ref.read(llmSettingsRepositoryProvider).loadConfig();

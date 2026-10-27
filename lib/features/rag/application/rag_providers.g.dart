@@ -79,7 +79,7 @@ final class RagServiceProvider
         argument: null,
         retry: null,
         name: r'ragServiceProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -99,7 +99,7 @@ final class RagServiceProvider
   }
 }
 
-String _$ragServiceHash() => r'a441caeaec526466b7d2acd48b3b1d564eff7c05';
+String _$ragServiceHash() => r'702ee95c4dc2bfe7f4df53d9d1b5d5472ee295a6';
 
 /// Result of the "Check connection" button: how many passages a test query
 /// returned. A [RagFailure] ends up in the error state.

@@ -26,7 +26,7 @@ final class FixSessionFactoryProvider
         argument: null,
         retry: null,
         name: r'fixSessionFactoryProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -54,4 +54,4 @@ final class FixSessionFactoryProvider
   }
 }
 
-String _$fixSessionFactoryHash() => r'f1aa244566f2462c3b1884d6690beff409d77090';
+String _$fixSessionFactoryHash() => r'bee294b13c81af90127ed63de040045d29bf9989';

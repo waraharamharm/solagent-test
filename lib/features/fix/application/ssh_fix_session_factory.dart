@@ -21,7 +21,7 @@ import 'fix_session.dart';
 
 part 'ssh_fix_session_factory.g.dart';
 
-@riverpod
+@Riverpod(keepAlive: true)
 FixSessionFactory fixSessionFactory(Ref ref) => SshFixSessionFactory(ref);
 
 /// Opens the saved server over SSH. The host key must already be pinned (done

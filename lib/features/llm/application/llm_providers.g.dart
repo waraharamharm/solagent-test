@@ -79,7 +79,7 @@ final class LlmServiceProvider
         argument: null,
         retry: null,
         name: r'llmServiceProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -99,4 +99,4 @@ final class LlmServiceProvider
   }
 }
 
-String _$llmServiceHash() => r'c092c34dc0a4e3b46b36e3a8fa58b5938e14b63b';
+String _$llmServiceHash() => r'cdefb69c8563d6e674075970c2a658f066c3fdce';
