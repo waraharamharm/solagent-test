@@ -284,4 +284,25 @@ void main() {
     expect(h.state.result?.outcome, FixOutcome.succeeded);
     expect(h.notifier.events, ['start']);
   });
+  test('stop shows "stopping" at once and clears it at the end', () async {
+    final h = _Harness(
+      results: {
+        'demo': (1, ['boom']),
+      },
+      aiReplies: [_reply('mkdir -p ~/conf')],
+    );
+    h.container.listen(fixRunProvider, (_, _) {});
+
+    final running = h.run.start(_script);
+    await h.untilPending();
+    final stopping = h.run.cancel();
+
+    expect(h.state.stopping, isTrue);
+    expect(h.state.status, isNotNull);
+    await stopping;
+    await running;
+    expect(h.state.running, isFalse);
+    expect(h.state.stopping, isFalse);
+    expect(h.state.result?.outcome, FixOutcome.cancelled);
+  });
 }

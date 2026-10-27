@@ -416,5 +416,7 @@
   "monitorFinishedOk": "Install finished",
   "monitorFinishedFailed": "Install finished with an error",
   "monitorLost": "The install process was stopped on the server",
-  "@monitorStep": { "placeholders": { "step": { "type": "String" } } }
+  "@monitorStep": { "placeholders": { "step": { "type": "String" } } },
+  "fixStatusStopping": "Stopping the install…",
+  "fixDemoStopping": "Stopping…"
 }

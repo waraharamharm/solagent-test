@@ -1483,6 +1483,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The install process was stopped on the server'**
   String get monitorLost;
+
+  /// No description provided for @fixStatusStopping.
+  ///
+  /// In en, this message translates to:
+  /// **'Stopping the install…'**
+  String get fixStatusStopping;
+
+  /// No description provided for @fixDemoStopping.
+  ///
+  /// In en, this message translates to:
+  /// **'Stopping…'**
+  String get fixDemoStopping;
 }
 
 class _AppLocalizationsDelegate

@@ -86,9 +86,18 @@ class _FixDemoView extends ConsumerWidget {
                 alignment: Alignment.centerLeft,
                 child: s.running
                     ? OutlinedButton.icon(
-                        onPressed: run.cancel,
-                        icon: const Icon(Icons.stop_rounded),
-                        label: Text(l10n.fixDemoStop),
+                        onPressed: s.stopping ? null : run.cancel,
+                        icon: s.stopping
+                            ? const SizedBox.square(
+                                dimension: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Icon(Icons.stop_rounded),
+                        label: Text(
+                          s.stopping ? l10n.fixDemoStopping : l10n.fixDemoStop,
+                        ),
                       )
                     : FilledButton.icon(
                         onPressed: () => run.start(fixDemoScript()),

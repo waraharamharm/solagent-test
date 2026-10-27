@@ -19,6 +19,7 @@ class FixStep {
 class FixRunState {
   const FixRunState({
     this.running = false,
+    this.stopping = false,
     this.log = const [],
     this.steps = const [],
     this.status,
@@ -28,6 +29,9 @@ class FixRunState {
   });
 
   final bool running;
+
+  /// The user pressed stop; the job is being cancelled on the server.
+  final bool stopping;
   final List<String> log;
   final List<FixStep> steps;
   final String? status;

@@ -74,7 +74,7 @@ class FixRun extends _$FixRun {
       if (_notifier != null) await notifier.stop();
       _notifier = null;
       await session?.close();
-      _set(_copy(running: false, pending: null));
+      _set(_copy(running: false, stopping: false, pending: null));
     }
   }
 
@@ -100,7 +100,10 @@ class FixRun extends _$FixRun {
   }
 
   Future<void> cancel() async {
-    final stopping = _loop?.cancel();
+    final loop = _loop;
+    if (loop == null || state.stopping) return;
+    _set(_copy(stopping: true, status: _l10n.fixStatusStopping));
+    final stopping = loop.cancel();
     _resolve(false);
     await stopping;
   }
@@ -251,6 +254,7 @@ class FixRun extends _$FixRun {
 
   FixRunState _copy({
     bool? running,
+    bool? stopping,
     List<String>? log,
     List<FixStep>? steps,
     Object? status = _keep,
@@ -259,14 +263,19 @@ class FixRun extends _$FixRun {
     Object? error,
   }) {
     final s = state;
+    final stoppingNow = stopping ?? s.stopping;
+    final shownStatus = identical(status, _keep) ? s.status : status as String?;
     final lines = log ?? s.log;
     return FixRunState(
       running: running ?? s.running,
+      stopping: stopping ?? s.stopping,
       log: lines.length > _maxLogLines
           ? lines.sublist(lines.length - _maxLogLines)
           : lines,
       steps: steps ?? s.steps,
-      status: identical(status, _keep) ? s.status : status as String?,
+      status: stoppingNow && shownStatus != null
+          ? _l10n.fixStatusStopping
+          : shownStatus,
       pending: identical(pending, _keep) ? s.pending : pending as FixProposal?,
       result: result ?? s.result,
       error: error ?? s.error,

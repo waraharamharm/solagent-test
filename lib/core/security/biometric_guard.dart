@@ -8,7 +8,17 @@ import 'biometric_gate.dart';
 /// Shows [child] only after a successful local authentication, and locks
 /// again when the app goes to the background.
 class BiometricGuard extends ConsumerStatefulWidget {
-  const BiometricGuard({super.key, required this.child, this.reason});
+  const BiometricGuard({
+    super.key,
+    required this.child,
+    this.reason,
+    this.relockAfter = const Duration(seconds: 3),
+  });
+
+  /// How long the app may be away before the lock comes back. The system
+  /// prompt pauses and resumes the app around itself; a pause that short must
+  /// not ask again.
+  final Duration relockAfter;
 
   final Widget child;
 
@@ -23,6 +33,8 @@ class _BiometricGuardState extends ConsumerState<BiometricGuard>
     with WidgetsBindingObserver {
   GateResult? _result;
   bool _busy = false;
+  bool _covered = false;
+  DateTime? _pausedAt;
 
   @override
   void initState() {
@@ -39,13 +51,29 @@ class _BiometricGuardState extends ConsumerState<BiometricGuard>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    // The system prompt itself pauses the app; do not lock while it is up.
-    if (state == AppLifecycleState.paused && !_busy) {
-      setState(() => _result = null);
-    } else if (state == AppLifecycleState.resumed &&
-        _result == null &&
-        !_busy) {
-      _authenticate();
+    if (_busy) return;
+    if (state == AppLifecycleState.paused) {
+      // Hide the content right away (the recent-apps preview), decide later.
+      _pausedAt ??= DateTime.now();
+      if (_result == GateResult.granted) setState(() => _covered = true);
+    } else if (state == AppLifecycleState.resumed) {
+      final away = _pausedAt == null
+          ? Duration.zero
+          : DateTime.now().difference(_pausedAt!);
+      _pausedAt = null;
+      if (_result == GateResult.granted) {
+        if (away < widget.relockAfter) {
+          if (_covered) setState(() => _covered = false);
+        } else {
+          setState(() {
+            _covered = false;
+            _result = null;
+          });
+          _authenticate();
+        }
+      } else if (_result == null) {
+        _authenticate();
+      }
     }
   }
 
@@ -58,13 +86,15 @@ class _BiometricGuardState extends ConsumerState<BiometricGuard>
     if (!mounted) return;
     setState(() {
       _busy = false;
+      _covered = false;
+      _pausedAt = null;
       _result = result;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_result == GateResult.granted) return widget.child;
+    if (_result == GateResult.granted && !_covered) return widget.child;
     final l10n = context.l10n;
     final text = switch (_result) {
       GateResult.unavailable => l10n.guardUnavailable,

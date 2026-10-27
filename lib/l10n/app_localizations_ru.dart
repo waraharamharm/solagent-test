@@ -771,4 +771,10 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get monitorLost => 'Процесс установки остановлен на сервере';
+
+  @override
+  String get fixStatusStopping => 'Останавливаю установку…';
+
+  @override
+  String get fixDemoStopping => 'Останавливаю…';
 }

@@ -776,4 +776,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get monitorLost => 'The install process was stopped on the server';
+
+  @override
+  String get fixStatusStopping => 'Stopping the install…';
+
+  @override
+  String get fixDemoStopping => 'Stopping…';
 }
