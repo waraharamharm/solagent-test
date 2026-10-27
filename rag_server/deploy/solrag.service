@@ -1,0 +1,17 @@
+[Unit]
+Description=SolAgent RAG server
+After=network.target
+
+[Service]
+Environment=SOLRAG_DATA_DIR=%h/solrag/data
+Environment=SOLRAG_HOST=127.0.0.1
+Environment=SOLRAG_PORT=8795
+ExecStart=%h/solrag/venv/bin/python -m solrag
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=yes
+PrivateTmp=yes
+MemoryMax=1500M
+
+[Install]
+WantedBy=default.target
