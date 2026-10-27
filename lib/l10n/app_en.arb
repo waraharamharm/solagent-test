@@ -1,0 +1,411 @@
+{
+  "@@locale": "en",
+  "appTitle": "SolAgent",
+  "@appTitle": {
+    "description": "App name shown in the task switcher"
+  },
+
+  "commonServer": "Server",
+  "@commonServer": {
+    "description": "Name of the user's VDS: bottom tab label, page title and home tile title"
+  },
+  "commonAi": "AI",
+  "@commonAi": {
+    "description": "Short name of the AI provider section: tab label, page title, home tile title"
+  },
+  "commonSave": "Save",
+  "commonCancel": "Cancel",
+  "commonDelete": "Delete",
+  "commonPassword": "Password",
+  "commonDecisionNeeded": "Your decision needed",
+  "@commonDecisionNeeded": {
+    "description": "Shown when the AI has proposed a command and waits for the user to approve or decline it"
+  },
+  "commonWorking": "In progress",
+  "@commonWorking": {
+    "description": "Status of a running job; also the screen-reader label of the wavy progress line"
+  },
+  "commonSelfHealing": "Self-healing",
+  "@commonSelfHealing": {
+    "description": "Name of the feature where the AI fixes a failing script on the server"
+  },
+
+  "shellTabOverview": "Overview",
+  "shellTabDeploy": "Deployment",
+  "shellJobRun": "Run",
+  "@shellJobRun": {
+    "description": "Tooltip of the round dock button when no job is running"
+  },
+
+  "homeServerNotConnected": "Not connected",
+  "homeServerSaved": "saved",
+  "@homeServerSaved": {
+    "description": "Small status word next to the server tile once the server is stored"
+  },
+  "homeAiNoKey": "No key",
+  "homeAiReady": "ready",
+  "@homeAiReady": {
+    "description": "Small status word next to the AI tile once the provider is fully set up"
+  },
+  "homeRunWaiting": "Waiting for your decision",
+  "homeRunLastSucceeded": "Last run passed",
+  "homeRunDemo": "Demo on your server",
+  "homeRunLastFailed": "Last run failed",
+  "homeHeroReviewCommand": "Review the command",
+  "homeHeroServerBusy": "The server is running a task",
+  "homeHeroOpen": "Open",
+  "homeHeroConnectServerTitle": "Connect a server",
+  "homeHeroConnectServerBody": "Your VDS address and a password or key. We’ll check the system and remember the server’s fingerprint.",
+  "homeHeroAddServer": "Add server",
+  "homeHeroConnectAiTitle": "Connect AI",
+  "homeHeroConnectAiBody": "You’ll need your own API key: DeepSeek, Grok, OpenRouter, OpenAI, or a custom address.",
+  "homeHeroAddKey": "Add key",
+  "homeHeroAllSetTitle": "Everything is connected",
+  "homeHeroAllSetBody": "Server and AI are ready. Try self-healing on the demo script.",
+  "homeHeroOpenDemo": "Open demo",
+  "homeThemeTooltip": "Theme",
+  "homeThemeSystem": "Match system",
+  "homeThemeLight": "Light",
+  "homeThemeDark": "Dark",
+  "homeLanguageTooltip": "Language",
+  "homeLanguageAuto": "Match device",
+  "homeSupportTitle": "Support the project",
+  "homeSupportSubtitle": "Donation for development",
+  "supportTitle": "Support the project",
+  "supportIntro": "SolAgent is free. A donation is a voluntary gift for the development of the project, not payment for access or features.",
+  "supportGroupOnline": "Online",
+  "supportGroupTransfer": "Direct transfer",
+  "supportOpensInBrowser": "Opens in your browser",
+  "supportTapToCopy": "Tap to copy",
+  "supportCopied": "Copied",
+  "supportOpenFailed": "Could not open the link",
+
+  "serverNewTitle": "New server",
+  "serverFingerprintPrompt": "Compare this fingerprint with the one on your server. Run this on the server:\n{command}",
+  "@serverFingerprintPrompt": {
+    "description": "Body of the dialog asking the user to verify the SSH host key fingerprint; {command} is a shell command shown as is",
+    "placeholders": {
+      "command": {
+        "type": "String"
+      }
+    }
+  },
+  "serverFingerprintMatches": "It matches",
+  "serverForgetTitle": "Remove the server?",
+  "serverForgetBody": "The address and the password or key will be deleted from this device.",
+  "serverForgetTooltip": "Remove server",
+  "serverLoadFailed": "Couldn’t load the server",
+  "serverSecretKeyLabel": "Private key (PEM / OpenSSH)",
+  "serverSectionAddress": "Address",
+  "serverHostLabel": "IP or domain",
+  "serverUserLabel": "Username",
+  "serverPortLabel": "Port",
+  "serverPortNotNumber": "Enter a number",
+  "serverSectionLogin": "Sign-in",
+  "serverAuthKey": "Key",
+  "serverFieldRequired": "Fill in this field",
+  "serverProfileSubtitle": "{username} · port {port} · {auth}",
+  "@serverProfileSubtitle": {
+    "description": "Second line of the saved server tile",
+    "placeholders": {
+      "username": {
+        "type": "String"
+      },
+      "port": {
+        "type": "int"
+      },
+      "auth": {
+        "type": "String",
+        "description": "One of serverAuthByKey / serverAuthByPassword"
+      }
+    }
+  },
+  "serverAuthByKey": "key",
+  "@serverAuthByKey": {
+    "description": "Sign-in method inside serverProfileSubtitle (\"port 22 · key\")"
+  },
+  "serverAuthByPassword": "password",
+  "@serverAuthByPassword": {
+    "description": "Sign-in method inside serverProfileSubtitle (\"port 22 · password\")"
+  },
+  "serverCheck": "Check server",
+  "serverOsUnsupported": "{os}: only Ubuntu and Debian are supported",
+  "@serverOsUnsupported": {
+    "placeholders": {
+      "os": {
+        "type": "String"
+      }
+    }
+  },
+  "serverLoginRoot": "Signed in as root",
+  "serverLoginNotRoot": "Not signed in as root: installation needs sudo",
+  "serverFingerprintPinned": "Fingerprint saved",
+  "serverErrHostKeyMismatch": "The server’s fingerprint has changed. Either the server was reinstalled or the connection is being intercepted. The connection was refused.",
+  "serverErrRejected": "Connection cancelled",
+  "serverErrAuth": "The server rejected the password or key",
+  "serverErrInvalidKey": "The key can’t be read or needs a passphrase",
+  "serverErrNetwork": "Server unreachable: check the address and port",
+  "serverErrTimeout": "The server didn’t respond in time",
+  "serverErrSsh": "SSH error",
+  "serverErrCheckFailed": "Couldn’t check the server",
+
+  "fixDemoStop": "Stop",
+  "fixDemoStart": "Run demo",
+  "fixDemoProposalSubtitle": "The AI suggests one command",
+  "fixDemoWorkingTitle": "Working on it",
+  "fixDemoConnecting": "Connecting…",
+  "fixDemoDoneTitle": "Done",
+  "fixDemoDoneSubtitle": "The script passed after the fix",
+  "fixDemoStoppedTitle": "Stopped",
+  "fixDemoDeclinedSubtitle": "You declined the command",
+  "fixDemoCancelledSubtitle": "The run was interrupted",
+  "fixDemoNotFixedTitle": "Not fixed",
+  "fixDemoNoFixSubtitle": "The AI found no safe command: {message}",
+  "@fixDemoNoFixSubtitle": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "fixDemoGaveUpSubtitle": "Couldn’t fix it after several attempts",
+  "fixDemoLostTitle": "Task interrupted",
+  "fixDemoLostSubtitle": "The server rebooted or ran out of memory",
+  "fixDemoErrorTitle": "Error",
+  "fixDemoErrorFallback": "Something went wrong",
+  "fixDemoIdleSubtitle": "The demo script fails without the file {path}. The AI will find the cause and suggest a command.",
+  "@fixDemoIdleSubtitle": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "fixDemoErrHostNotChecked": "The server hasn’t been checked yet. Open the Server tab and tap “Check server”.",
+  "fixDemoErrStartFailed": "Couldn’t start the run\n{error}",
+  "@fixDemoErrStartFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "fixDemoDecline": "Decline",
+  "fixDemoApprove": "Run",
+  "@fixDemoApprove": {
+    "description": "Button that approves the AI's proposed command; nothing runs on the server before it is pressed"
+  },
+  "fixDemoLogTitle": "Server log",
+  "fixDemoLogCollapse": "Collapse",
+  "fixDemoLogShowAll": "Full log",
+
+  "llmLoadFailed": "Couldn’t load the settings",
+  "llmSettingsSaved": "Settings saved",
+  "llmClearKeyTitle": "Delete the key?",
+  "llmClearKeyBody": "The key will be removed from this device.",
+  "llmSectionProvider": "Provider",
+  "llmSectionEndpoint": "Address and model",
+  "llmModelLabel": "Model",
+  "llmApiKey": "API key",
+  "llmKeySaved": "Key saved",
+  "llmKeyDeleteTooltip": "Delete key",
+  "llmSaveKey": "Save key",
+  "llmSectionCheck": "Check",
+  "llmCheckConnection": "Test connection",
+  "llmCheckFailed": "Couldn’t run the check",
+  "llmModelReply": "Model reply: {reply}",
+  "@llmModelReply": {
+    "placeholders": {
+      "reply": {
+        "type": "String"
+      }
+    }
+  },
+
+  "problemServerNotConfigured": "The server isn’t set up yet",
+  "problemServerOsUnknown": "Couldn’t detect the server’s operating system",
+  "problemAiNotConfigured": "Set up the AI and its key first",
+  "problemEmptyKey": "The key is empty",
+  "problemEmptyPassword": "The password is empty",
+  "problemBaseUrlNotAbsolute": "Enter a full address, for example https://api.example.com/v1",
+  "problemBaseUrlInsecureHttp": "Without https your key would travel as plain text. Use http only on a local network",
+  "problemBaseUrlUnsupportedScheme": "Only http and https are supported",
+  "problemServerBadHost": "Invalid server address",
+  "problemServerBadPort": "Port must be from 1 to 65535",
+  "problemServerBadLogin": "Invalid login",
+
+  "llmPresetCustom": "Custom endpoint",
+  "llmCheckNeedSettings": "Fill in the settings and the key first",
+  "llmCheckFailedWithError": "Couldn’t run the check\n{error}",
+  "@llmCheckFailedWithError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "llmErrForbidden": "Access denied. A common cause is your region: turn on a VPN",
+  "llmErrUnauthorized": "The key was not accepted: make sure you pasted all of it",
+  "llmErrRateLimited": "Rate limit reached or the balance has run out",
+  "llmErrNetwork": "Can’t reach the provider",
+  "llmErrServer": "Provider error",
+  "llmErrBadResponse": "The provider sent a response we can’t read",
+
+  "fixStatusConnecting": "Connecting to the server…",
+  "fixStatusWaitingDecision": "Waiting for your decision",
+  "fixStepYourDecision": "Your decision",
+  "fixStepRunScript": "Starting the script",
+  "fixStepRerun": "Re-run {round}",
+  "@fixStepRerun": {
+    "placeholders": {
+      "round": {
+        "type": "int"
+      }
+    }
+  },
+  "fixStepFix": "Fix {round}",
+  "@fixStepFix": {
+    "placeholders": {
+      "round": {
+        "type": "int"
+      }
+    }
+  },
+  "fixLogExitCode": "── exit code {code} ──",
+  "@fixLogExitCode": {
+    "placeholders": {
+      "code": {
+        "type": "int"
+      }
+    }
+  },
+  "fixDetailJobInterrupted": "The job was interrupted",
+  "fixDetailJobFailedCode": "Failed, code {code}",
+  "@fixDetailJobFailedCode": {
+    "placeholders": {
+      "code": {
+        "type": "int"
+      }
+    }
+  },
+  "fixStatusDiagnosing": "The AI is analyzing the error (attempt {round})…",
+  "@fixStatusDiagnosing": {
+    "placeholders": {
+      "round": {
+        "type": "int"
+      }
+    }
+  },
+  "fixStepDiagnosing": "The AI is looking for the cause",
+  "fixLogBlockedCommand": "── The AI proposed a forbidden command, rejected: {reason} ──",
+  "@fixLogBlockedCommand": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "fixDetailCommandForbidden": "The command is forbidden by the rules; the AI was asked for another one",
+  "fixDetailAllowed": "Allowed",
+  "fixDetailDeclined": "Declined",
+  "fixErrAi": "AI: {detail}",
+  "@fixErrAi": {
+    "placeholders": {
+      "detail": {
+        "type": "String"
+      }
+    }
+  },
+  "fixErrAiFormat": "The AI answered in an unexpected format\n{detail}",
+  "@fixErrAiFormat": {
+    "placeholders": {
+      "detail": {
+        "type": "String"
+      }
+    }
+  },
+  "fixErrConnection": "Connection to the server was lost\n{detail}",
+  "@fixErrConnection": {
+    "placeholders": {
+      "detail": {
+        "type": "String"
+      }
+    }
+  },
+  "fixErrServer": "Server: {detail}",
+  "@fixErrServer": {
+    "placeholders": {
+      "detail": {
+        "type": "String"
+      }
+    }
+  },
+
+  "blockCurlPipeShell": "Downloading a script from the internet and running it (curl | bash)",
+  "blockPipeToShell": "Piping text into a shell to run it",
+  "blockPipeToInterpreter": "Piping text into an interpreter to run it",
+  "blockRunDownloaded": "Running something that was downloaded from the internet",
+  "blockProcessSubstitution": "Running a script through process substitution",
+  "blockEval": "eval hides what will be run",
+  "blockDecodeHidden": "Decoding hidden content",
+  "blockEscapedBytes": "Escaped bytes inside the command",
+  "blockNoPreserveRoot": "Deleting the filesystem root",
+  "blockFindDelete": "Mass deletion with find",
+  "blockDiskPartitioning": "Working with disk partitions",
+  "blockWriteToDevice": "Writing straight to a device",
+  "blockForkBomb": "Fork bomb",
+  "blockRebootShutdown": "Rebooting or shutting down the server",
+  "blockAccountChanges": "Changing user accounts",
+  "blockCredentialsAccess": "Access to keys, passwords or login settings",
+  "blockStopSsh": "Stopping SSH: you would lose access to the server",
+  "blockFirewallReset": "Resetting the firewall",
+  "blockRawNetwork": "Raw network connection (data could leak)",
+  "blockKillAll": "Terminating all processes",
+  "blockCronRemoval": "Deleting all cron jobs",
+  "blockHistoryHiding": "Hiding the command history",
+  "blockInteractiveSu": "Interactive login as another user",
+  "blockSolagentDir": "SolAgent’s own working directory",
+  "blockDownloadAndRun": "Downloading a file from the internet and running it",
+  "blockXargsExec": "Running text through xargs",
+  "blockEmpty": "Empty command",
+  "blockTooLong": "The command is too long",
+  "blockControlChars": "Invisible control characters",
+  "blockRecursiveDelete": "Recursive deletion of the root, home or a system directory",
+  "blockRecursiveChmod": "Recursive permission change on a system directory",
+
+  "warnRoot": "Runs with root rights",
+  "warnRm": "Deletes files without asking",
+  "warnPackages": "Removes packages",
+  "warnService": "Stops or restarts a service",
+  "warnDocker": "Deletes Docker containers or data",
+  "warnChmod777": "Makes a file writable by everyone",
+  "warnEtcOverwrite": "Overwrites a system file",
+  "warnKill": "Terminates processes",
+  "warnDownload": "Downloads from the internet",
+  "warnFirewall": "Changes the firewall",
+
+  "guardReason": "Confirm it’s you to access the server",
+  "guardUnavailable": "No screen lock or fingerprint is set up on this device. Turn one on in the phone settings: without it, access to the server stays closed.",
+  "guardDenied": "Access closed",
+  "guardChecking": "Checking…",
+  "guardUnlock": "Unlock",
+"ragSectionTitle": "Knowledge base",
+  "ragHint": "Documentation and approved solutions help the AI with typical errors. Only a scrubbed excerpt of the error is sent.",
+  "ragAddressLabel": "Server address",
+  "ragKeyLabel": "Access key",
+  "ragSaveKey": "Save access key",
+  "ragKeySaved": "Access key saved",
+  "ragKeyDeleteTooltip": "Delete access key",
+  "ragClearKeyTitle": "Delete the access key?",
+  "ragClearKeyBody": "The AI will repair without the knowledge base.",
+  "ragCheck": "Check knowledge base",
+  "ragCheckOk": "Connected. Passages found: {count}",
+  "ragErrUnauthorized": "The server rejected the key.",
+  "ragErrRateLimited": "Too many requests. Try again in {seconds} s.",
+  "ragErrNetwork": "Could not reach the knowledge base.",
+  "ragErrServer": "The knowledge base failed (HTTP {status}).",
+  "ragErrBadResponse": "Unexpected reply from the knowledge base.",
+  "ragNoKey": "Save an access key first.",  "@ragCheckOk": { "placeholders": { "count": { "type": "int" } } },
+  "@ragErrRateLimited": { "placeholders": { "seconds": { "type": "int" } } },
+  "@ragErrServer": { "placeholders": { "status": { "type": "int" } } }
+}
