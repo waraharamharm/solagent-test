@@ -90,14 +90,16 @@ def delete_run(conn: sqlite3.Connection, run_id: str) -> None:
 class PushSender(Protocol):
     available: bool
 
-    def send(self, fcm_token: str, title: str, body: str) -> bool:
-        """False when FCM says the device token is no longer valid."""
+    def send(self, fcm_token: str, title: str, body: str, tag: str) -> bool:
+        """False when FCM says the device token is no longer valid.
+
+        A push with the same [tag] replaces the previous one on the phone."""
 
 
 class NullSender:
     available = False
 
-    def send(self, fcm_token: str, title: str, body: str) -> bool:
+    def send(self, fcm_token: str, title: str, body: str, tag: str) -> bool:
         return True
 
 
@@ -117,14 +119,14 @@ class FcmSender:
         self._project = json.loads(credentials_file.read_text(encoding="utf-8"))["project_id"]
         self._session = AuthorizedSession(credentials)
 
-    def send(self, fcm_token: str, title: str, body: str) -> bool:
+    def send(self, fcm_token: str, title: str, body: str, tag: str) -> bool:
         response = self._session.post(
             f"https://fcm.googleapis.com/v1/projects/{self._project}/messages:send",
             json={
                 "message": {
                     "token": fcm_token,
                     "notification": {"title": title, "body": body},
-                    "android": {"priority": "HIGH"},
+                    "android": {"priority": "HIGH", "notification": {"tag": tag}},
                 }
             },
             timeout=10,

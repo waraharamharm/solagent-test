@@ -12,10 +12,12 @@ class FakeSender:
 
     def __init__(self) -> None:
         self.sent: list[tuple[str, str, str]] = []
+        self.tags: list[str] = []
         self.valid = True
 
-    def send(self, fcm_token: str, title: str, body: str) -> bool:
+    def send(self, fcm_token: str, title: str, body: str, tag: str) -> bool:
         self.sent.append((fcm_token, title, body))
+        self.tags.append(tag)
         return self.valid
 
 
@@ -56,6 +58,15 @@ def test_checkpoint_sends_a_push_with_only_step_and_state(relay_client, sender):
     r = _report(relay_client, run_id, token, step="deps", state="done")
     assert r.status_code == 200 and r.json() == {"pushed": True}
     assert sender.sent == [(FCM_TOKEN, "Step done", "deps")]
+
+
+def test_pushes_of_one_run_share_a_tag_so_they_replace_each_other(relay_client, sender):
+    run_id, token = _start(relay_client)
+    _report(relay_client, run_id, token, step="a", state="done")
+    _report(relay_client, run_id, token, step="b", state="done")
+    other_id, other_token = _start(relay_client)
+    _report(relay_client, other_id, other_token, step="c", state="done")
+    assert sender.tags == [run_id, run_id, other_id]
 
 
 def test_push_uses_the_registered_language(relay_client, sender):

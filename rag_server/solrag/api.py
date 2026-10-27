@@ -225,7 +225,7 @@ def create_app(
         if req.state not in relay.PUSHED_STATES:
             return CheckpointAccepted(pushed=False)
         title, body = relay.push_text(run.lang, req.step, req.state)
-        if not sender.send(run.fcm_token, title, body):
+        if not sender.send(run.fcm_token, title, body, run.id):
             relay.delete_run(conn, run.id)
             return CheckpointAccepted(pushed=False)
         if req.state == "finished":
