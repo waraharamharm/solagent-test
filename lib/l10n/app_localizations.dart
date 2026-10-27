@@ -1435,6 +1435,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Save an access key first.'**
   String get ragNoKey;
+
+  /// No description provided for @monitorChannelName.
+  ///
+  /// In en, this message translates to:
+  /// **'Install progress'**
+  String get monitorChannelName;
+
+  /// No description provided for @monitorTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'SolAgent: install in progress'**
+  String get monitorTitle;
+
+  /// No description provided for @monitorStarting.
+  ///
+  /// In en, this message translates to:
+  /// **'Starting…'**
+  String get monitorStarting;
+
+  /// No description provided for @monitorStep.
+  ///
+  /// In en, this message translates to:
+  /// **'Step: {step}'**
+  String monitorStep(String step);
+
+  /// No description provided for @monitorWaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'No connection to the server, retrying. The install keeps running.'**
+  String get monitorWaiting;
+
+  /// No description provided for @monitorFinishedOk.
+  ///
+  /// In en, this message translates to:
+  /// **'Install finished'**
+  String get monitorFinishedOk;
+
+  /// No description provided for @monitorFinishedFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Install finished with an error'**
+  String get monitorFinishedFailed;
+
+  /// No description provided for @monitorLost.
+  ///
+  /// In en, this message translates to:
+  /// **'The install process was stopped on the server'**
+  String get monitorLost;
 }
 
 class _AppLocalizationsDelegate

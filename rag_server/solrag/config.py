@@ -17,6 +17,9 @@ class Settings:
     max_pending_per_key: int = 20
     auth_failures_per_minute: int = 10
     max_body_bytes: int = 32768
+    fcm_credentials: Path | None = None
+    runs_per_hour: int = 20
+    checkpoints_per_hour: int = 240
 
     @property
     def db_path(self) -> Path:
@@ -31,10 +34,12 @@ class Settings:
         data_dir = Path(os.environ.get("SOLRAG_DATA_DIR", "data")).resolve()
         model_cache = Path(os.environ.get("SOLRAG_MODEL_CACHE", data_dir / "models")).resolve()
         literals = os.environ.get("SOLRAG_SCRUB_LITERALS")
+        fcm = os.environ.get("SOLRAG_FCM_CREDENTIALS")
         return cls(
             data_dir=data_dir,
             model_cache=model_cache,
             host=os.environ.get("SOLRAG_HOST", "127.0.0.1"),
             port=int(os.environ.get("SOLRAG_PORT", "8795")),
             scrub_literals=Path(literals).resolve() if literals else None,
+            fcm_credentials=Path(fcm).resolve() if fcm else None,
         )

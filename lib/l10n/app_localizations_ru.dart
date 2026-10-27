@@ -744,4 +744,31 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get ragNoKey => 'Сначала сохраните ключ доступа.';
+
+  @override
+  String get monitorChannelName => 'Ход установки';
+
+  @override
+  String get monitorTitle => 'SolAgent: идёт установка';
+
+  @override
+  String get monitorStarting => 'Запускаю…';
+
+  @override
+  String monitorStep(String step) {
+    return 'Шаг: $step';
+  }
+
+  @override
+  String get monitorWaiting =>
+      'Нет связи с сервером, повторяю. Установка продолжается.';
+
+  @override
+  String get monitorFinishedOk => 'Установка завершена';
+
+  @override
+  String get monitorFinishedFailed => 'Установка завершилась с ошибкой';
+
+  @override
+  String get monitorLost => 'Процесс установки остановлен на сервере';
 }

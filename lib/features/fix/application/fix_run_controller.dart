@@ -8,6 +8,9 @@ import '../../../core/l10n/l10n.dart';
 import '../../deploy/domain/deploy_models.dart';
 import '../../journal/domain/i_journal.dart';
 import '../../journal/domain/journal_entry.dart';
+import '../../monitor/application/relay_setup.dart';
+import '../../monitor/application/run_follower.dart';
+import '../../monitor/data/foreground_run_notifier.dart';
 import '../domain/fix_models.dart';
 import '../l10n/command_texts.dart';
 import 'fix_journal_events.dart';
@@ -28,6 +31,7 @@ class FixRun extends _$FixRun {
   Completer<bool>? _decision;
   FixLoop? _loop;
   IJournal? _journal;
+  IRunNotifier? _notifier;
   Future<void> _journalChain = Future.value();
 
   /// Read at the moment a message is produced, so it is in the language the
@@ -42,13 +46,20 @@ class FixRun extends _$FixRun {
 
   Future<void> start(DeployScript script) async {
     if (state.running) return;
+    final notifier = ref.read(runNotificationsProvider);
     _set(FixRunState(running: true, status: _l10n.fixStatusConnecting));
     FixSession? session;
     try {
+      if (await notifier.start()) _notifier = notifier;
+      final prelude = await ref.read(checkpointPreludeSourceProvider).create();
+      final withMarkers = DeployScript(
+        jobId: script.jobId,
+        body: '$prelude\n${script.body}',
+      );
       session = await ref.read(fixSessionFactoryProvider).open();
       _journal = session.journal;
       final loop = _loop = session.loop;
-      await for (final e in loop.run(script, confirm: _ask)) {
+      await for (final e in loop.run(withMarkers, confirm: _ask)) {
         if (!ref.mounted) return;
         _apply(e);
       }
@@ -60,6 +71,8 @@ class FixRun extends _$FixRun {
       _loop = null;
       await _journalChain;
       _journal = null;
+      if (_notifier != null) await notifier.stop();
+      _notifier = null;
       await session?.close();
       _set(_copy(running: false, pending: null));
     }
@@ -261,6 +274,11 @@ class FixRun extends _$FixRun {
   }
 
   void _set(FixRunState next) {
-    if (ref.mounted) state = next;
+    if (!ref.mounted) return;
+    final text = next.status;
+    if (text != null && text != state.status) {
+      unawaited(_notifier?.showText(text));
+    }
+    state = next;
   }
 }

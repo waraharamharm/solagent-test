@@ -57,6 +57,16 @@ create table if not exists api_keys(
     revoked_at text
 );
 
+create table if not exists runs(
+    id text primary key,
+    token_hash text not null,
+    key_id integer not null,
+    fcm_token text not null,
+    lang text not null,
+    created_at text not null default (datetime('now')),
+    expires_at text not null
+);
+
 """
 
 

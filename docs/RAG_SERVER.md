@@ -22,7 +22,9 @@
 |---|---|---|
 | GET | `/v1/health` | `{"status":"ok"}`, без ключа |
 | POST | `/v1/search` | `{query ≤ 4000, os?, k ≤ 20}` → `results` |
-| GET | `/v1/bundle` | манифест (приложение пока не использует) |
+| GET | `/v1/bundle` | манифест (клиент: `IRagService.fetchBundle`, проверка в `bundle_reader.dart`) |
+| POST | `/v1/runs` | регистрация запуска (токен FCM, язык) → `run_id`, `run_token` на 24 часа; 503 без ключа FCM на сервере |
+| POST | `/v1/runs/{id}/checkpoints` | контрольная точка скрипта (Bearer = токен запуска); пуш для `done`/`failed`/`finished` |
 | GET | `/v1/bundle/archive/{sha256}` | неизменяемый архив, хранятся 2 |
 | POST | `/v1/solutions` | решение клиента → `202 pending`, в поиск не попадает до модерации |
 

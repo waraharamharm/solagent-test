@@ -749,4 +749,31 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get ragNoKey => 'Save an access key first.';
+
+  @override
+  String get monitorChannelName => 'Install progress';
+
+  @override
+  String get monitorTitle => 'SolAgent: install in progress';
+
+  @override
+  String get monitorStarting => 'Starting…';
+
+  @override
+  String monitorStep(String step) {
+    return 'Step: $step';
+  }
+
+  @override
+  String get monitorWaiting =>
+      'No connection to the server, retrying. The install keeps running.';
+
+  @override
+  String get monitorFinishedOk => 'Install finished';
+
+  @override
+  String get monitorFinishedFailed => 'Install finished with an error';
+
+  @override
+  String get monitorLost => 'The install process was stopped on the server';
 }

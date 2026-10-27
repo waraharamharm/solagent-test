@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:solagent/core/l10n/l10n.dart';
 import 'package:solagent/core/security/secure_store.dart';
 import 'package:solagent/features/rag/application/rag_providers.dart';
+import 'package:solagent/features/rag/domain/knowledge_bundle.dart';
 import 'package:solagent/features/rag/domain/rag_models.dart';
 import 'package:solagent/features/rag/presentation/rag_settings_section.dart';
 
@@ -12,6 +13,9 @@ import '../../support/memory_store.dart';
 class _Service implements IRagService {
   _Service(this.result);
   final Object result;
+
+  @override
+  Future<KnowledgeBundle> fetchBundle() => throw UnimplementedError();
 
   @override
   Future<List<RagHit>> search(String query, {String? os, int k = 4}) async {

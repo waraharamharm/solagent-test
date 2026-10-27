@@ -38,6 +38,14 @@ Flutter, Riverpod 3 с кодогенерацией (`@riverpod`), `go_router`, 
 `FixRun` не знает про SSH: тесты подменяют `FixSessionFactory`
 (`test/features/fix/fix_run_controller_test.dart`).
 
+## Фоновый мониторинг и пуши (`features/monitor`)
+
+- `checkpoint.dart`: маркер `@@SOLAGENT {"step":…,"state":…}` в логе скрипта; `checkpoint_prelude.dart`: shell-функция `solagent_checkpoint` (печатает маркер и сообщает ретранслятору, сбой запроса установку не останавливает).
+- `RunMonitor`: опрос задачи, переподключение при обрыве SSH, отказ после 30 неудач. `followRun`: связывает его с уведомлением.
+- `ForegroundRunNotifier`: Foreground Service типа `dataSync` и одно уведомление. `FixRun` запускает его на время прогона.
+- `RelayPreludeSource`: регистрирует запуск на сервере (токен FCM) и готовит функцию для скрипта; без ключа или токена работает локальный вариант без пушей.
+- Ретранслятор: `rag_server/solrag/relay.py`, [RAG_SERVER.md](RAG_SERVER.md).
+
 ## ИИ (`features/llm`)
 
 Интерфейс `ILLMService`, реализация OpenAI-совместимая

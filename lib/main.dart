@@ -7,8 +7,11 @@ import 'core/l10n/app_locale.dart';
 import 'core/l10n/l10n.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_mode_controller.dart';
+import 'features/monitor/data/fcm.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await initFirebase();
   runApp(const ProviderScope(child: SolAgentApp()));
 }
 

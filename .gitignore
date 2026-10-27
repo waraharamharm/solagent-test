@@ -50,3 +50,6 @@ app.*.map.json
 # Local design scratch
 .impeccable/
 
+
+# Firebase config (per-developer)
+android/app/google-services.json

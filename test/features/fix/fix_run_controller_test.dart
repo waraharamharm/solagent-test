@@ -11,6 +11,10 @@ import 'package:solagent/features/fix/application/fix_session.dart';
 import 'package:solagent/features/fix/application/ssh_fix_session_factory.dart';
 import 'package:solagent/features/fix/domain/log_redactor.dart';
 import 'package:solagent/features/journal/domain/journal_entry.dart';
+import 'package:solagent/features/monitor/application/relay_setup.dart';
+import 'package:solagent/features/monitor/application/run_follower.dart';
+import 'package:solagent/features/monitor/application/run_monitor.dart';
+import 'package:solagent/features/monitor/data/foreground_run_notifier.dart';
 import 'package:solagent/features/server/domain/server_profile.dart';
 
 import '../../support/fake_deploy_engine.dart';
@@ -43,6 +47,33 @@ class _Factory implements FixSessionFactory {
   }
 }
 
+class _Notifier implements IRunNotifier {
+  _Notifier({this.canStart = true});
+
+  final bool canStart;
+  final events = <String>[];
+
+  @override
+  Future<bool> start() async {
+    events.add('start');
+    return canStart;
+  }
+
+  @override
+  Future<void> update(RunSnapshot snapshot) async {}
+
+  @override
+  Future<void> showText(String text) async => events.add('text:$text');
+
+  @override
+  Future<void> stop() async => events.add('stop');
+}
+
+class _Prelude implements CheckpointPreludeSource {
+  @override
+  Future<String> create() async => '# prelude';
+}
+
 class _FailingFactory implements FixSessionFactory {
   @override
   Future<FixSession> open() async =>
@@ -54,7 +85,9 @@ class _Harness {
     Map<String, (int, List<String>)> results = const {},
     List<Object> aiReplies = const [],
     bool failJournal = false,
-  }) : journal = FakeJournal(failWrites: failJournal),
+    bool canNotify = true,
+  }) : notifier = _Notifier(canStart: canNotify),
+       journal = FakeJournal(failWrites: failJournal),
        engine = FakeEngine(results),
        llm = FakeLlm([...aiReplies]) {
     factory = _Factory(
@@ -76,12 +109,15 @@ class _Harness {
       overrides: [
         secureStoreProvider.overrideWithValue(MemoryStore()),
         fixSessionFactoryProvider.overrideWithValue(factory),
+        runNotificationsProvider.overrideWithValue(notifier),
+        checkpointPreludeSourceProvider.overrideWithValue(_Prelude()),
       ],
     );
     addTearDown(container.dispose);
   }
 
   final FakeJournal journal;
+  final _Notifier notifier;
   final FakeEngine engine;
   final FakeLlm llm;
   late final _Factory factory;
@@ -89,7 +125,7 @@ class _Harness {
   int closed = 0;
 
   FixRunState get state => container.read(fixRunProvider);
-  FixRun get notifier => container.read(fixRunProvider.notifier);
+  FixRun get run => container.read(fixRunProvider.notifier);
 
   Future<void> untilPending() async {
     while (state.pending == null && state.running) {
@@ -105,7 +141,7 @@ void main() {
   test('success: result, journal and the session is closed', () async {
     final h = _Harness();
     h.container.listen(fixRunProvider, (_, _) {});
-    await h.notifier.start(_script);
+    await h.run.start(_script);
 
     expect(h.state.running, isFalse);
     expect(h.state.error, isNull);
@@ -128,11 +164,11 @@ void main() {
     );
     h.container.listen(fixRunProvider, (_, _) {});
 
-    final run = h.notifier.start(_script);
+    final running = h.run.start(_script);
     await h.untilPending();
     expect(h.state.pending?.command, 'mkdir -p ~/conf');
-    h.notifier.decide(approve: true);
-    await run;
+    h.run.decide(approve: true);
+    await running;
 
     expect(h.state.result?.outcome, FixOutcome.succeeded);
     expect(h.state.pending, isNull);
@@ -163,10 +199,10 @@ void main() {
     );
     h.container.listen(fixRunProvider, (_, _) {});
 
-    final run = h.notifier.start(_script);
+    final running = h.run.start(_script);
     await h.untilPending();
-    h.notifier.decide(approve: false);
-    await run;
+    h.run.decide(approve: false);
+    await running;
 
     expect(h.state.result?.outcome, FixOutcome.declined);
     expect(h.engine.started.map((s) => s.jobId), ['demo']);
@@ -179,7 +215,7 @@ void main() {
   test('a journal that cannot be written does not stop the run', () async {
     final h = _Harness(failJournal: true);
     h.container.listen(fixRunProvider, (_, _) {});
-    await h.notifier.start(_script);
+    await h.run.start(_script);
 
     expect(h.state.result?.outcome, FixOutcome.succeeded);
     expect(h.state.error, isNull);
@@ -218,11 +254,34 @@ void main() {
     );
     h.container.listen(fixRunProvider, (_, _) {});
 
-    final run = h.notifier.start(_script);
+    final running = h.run.start(_script);
     await h.untilPending();
-    await h.notifier.start(_script);
+    await h.run.start(_script);
     expect(h.factory.opened, 1);
-    h.notifier.decide(approve: false);
-    await run;
+    h.run.decide(approve: false);
+    await running;
+  });
+  test(
+    'the script gets the checkpoint helper and the notification follows',
+    () async {
+      final h = _Harness();
+      h.container.listen(fixRunProvider, (_, _) {});
+      await h.run.start(_script);
+
+      expect(h.engine.started.first.body, startsWith('# prelude\n'));
+      expect(h.engine.started.first.body, endsWith('true\n'));
+      expect(h.notifier.events.first, 'start');
+      expect(h.notifier.events.last, 'stop');
+      expect(h.notifier.events.where((e) => e.startsWith('text:')), isNotEmpty);
+    },
+  );
+
+  test('a notification that cannot start does not stop the run', () async {
+    final h = _Harness(canNotify: false);
+    h.container.listen(fixRunProvider, (_, _) {});
+    await h.run.start(_script);
+
+    expect(h.state.result?.outcome, FixOutcome.succeeded);
+    expect(h.notifier.events, ['start']);
   });
 }

@@ -4,6 +4,7 @@ import 'package:solagent/features/fix/domain/log_redactor.dart';
 import 'package:solagent/features/journal/domain/journal_entry.dart';
 import 'package:solagent/features/llm/domain/chat_message.dart';
 import 'package:solagent/features/llm/domain/i_llm_service.dart';
+import 'package:solagent/features/rag/domain/knowledge_bundle.dart';
 import 'package:solagent/features/rag/domain/rag_models.dart';
 import 'package:solagent/features/server/domain/server_profile.dart';
 
@@ -35,6 +36,9 @@ class _Rag implements IRagService {
   final RagFailure? failure;
   final queries = <String>[];
   final oses = <String?>[];
+
+  @override
+  Future<KnowledgeBundle> fetchBundle() => throw UnimplementedError();
 
   @override
   Future<List<RagHit>> search(String query, {String? os, int k = 4}) async {

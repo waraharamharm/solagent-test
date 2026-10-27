@@ -407,5 +407,14 @@
   "ragErrBadResponse": "Unexpected reply from the knowledge base.",
   "ragNoKey": "Save an access key first.",  "@ragCheckOk": { "placeholders": { "count": { "type": "int" } } },
   "@ragErrRateLimited": { "placeholders": { "seconds": { "type": "int" } } },
-  "@ragErrServer": { "placeholders": { "status": { "type": "int" } } }
+  "@ragErrServer": { "placeholders": { "status": { "type": "int" } } },
+  "monitorChannelName": "Install progress",
+  "monitorTitle": "SolAgent: install in progress",
+  "monitorStarting": "Starting…",
+  "monitorStep": "Step: {step}",
+  "monitorWaiting": "No connection to the server, retrying. The install keeps running.",
+  "monitorFinishedOk": "Install finished",
+  "monitorFinishedFailed": "Install finished with an error",
+  "monitorLost": "The install process was stopped on the server",
+  "@monitorStep": { "placeholders": { "step": { "type": "String" } } }
 }

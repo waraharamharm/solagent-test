@@ -236,5 +236,13 @@
   "ragErrBadResponse": "Неожиданный ответ базы знаний.",
   "ragNoKey": "Сначала сохраните ключ доступа.",  "@ragCheckOk": { "placeholders": { "count": { "type": "int" } } },
   "@ragErrRateLimited": { "placeholders": { "seconds": { "type": "int" } } },
-  "@ragErrServer": { "placeholders": { "status": { "type": "int" } } }
+  "@ragErrServer": { "placeholders": { "status": { "type": "int" } } },
+  "monitorChannelName": "Ход установки",
+  "monitorTitle": "SolAgent: идёт установка",
+  "monitorStarting": "Запускаю…",
+  "monitorStep": "Шаг: {step}",
+  "monitorWaiting": "Нет связи с сервером, повторяю. Установка продолжается.",
+  "monitorFinishedOk": "Установка завершена",
+  "monitorFinishedFailed": "Установка завершилась с ошибкой",
+  "monitorLost": "Процесс установки остановлен на сервере"
 }

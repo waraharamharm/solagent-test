@@ -1,6 +1,11 @@
+import 'dart:typed_data';
+
 import 'package:dio/dio.dart';
 
+import '../domain/knowledge_bundle.dart';
 import '../domain/rag_models.dart';
+import 'bundle_reader.dart';
+import 'rag_errors.dart';
 
 /// Client for the knowledge server (`rag_server`). Only [RagFailure] escapes;
 /// failure messages never contain the API key.
@@ -22,10 +27,14 @@ class HttpRagService implements IRagService {
   /// The server rejects longer queries.
   static const maxQueryChars = 4000;
 
-  String get _url {
+  String _endpoint(String path) {
     final base = _config.baseUrl.replaceAll(RegExp(r'/+$'), '');
-    return '$base/v1/search';
+    return '$base/v1/$path';
   }
+
+  Map<String, String> get _auth => {
+    'Authorization': 'Bearer ${_config.apiKey}',
+  };
 
   @override
   Future<List<RagHit>> search(String query, {String? os, int k = 4}) async {
@@ -34,23 +43,54 @@ class HttpRagService implements IRagService {
         : query;
     try {
       final response = await _dio.post<Object?>(
-        _url,
+        _endpoint('search'),
         data: {'query': text, 'os': ?os, 'k': k},
         options: Options(
           responseType: ResponseType.json,
-          headers: {
-            'Authorization': 'Bearer ${_config.apiKey}',
-            'Content-Type': 'application/json',
-          },
+          headers: {..._auth, 'Content-Type': 'application/json'},
         ),
       );
       return _parse(response.data);
     } on RagFailure {
       rethrow;
     } on DioException catch (e) {
-      throw _map(e);
+      throw ragFailureFromDio(e);
     } catch (_) {
       throw const RagBadResponse('Unexpected error while calling the server');
+    }
+  }
+
+  @override
+  Future<KnowledgeBundle> fetchBundle() async {
+    final cancel = CancelToken();
+    try {
+      final manifestResponse = await _dio.get<Object?>(
+        _endpoint('bundle'),
+        options: Options(responseType: ResponseType.json, headers: _auth),
+      );
+      final manifest = parseBundleManifest(manifestResponse.data);
+      final archive = await _dio.get<List<int>>(
+        _endpoint('bundle/archive/${manifest.archiveSha256}'),
+        cancelToken: cancel,
+        onReceiveProgress: (received, _) {
+          if (received > manifest.archiveSize) cancel.cancel('too large');
+        },
+        options: Options(
+          responseType: ResponseType.bytes,
+          receiveTimeout: const Duration(seconds: 60),
+          headers: _auth,
+        ),
+      );
+      return readBundle(manifest, Uint8List.fromList(archive.data ?? const []));
+    } on RagFailure {
+      rethrow;
+    } on DioException catch (e) {
+      if (CancelToken.isCancel(e)) {
+        throw const RagBadResponse('Archive is larger than announced');
+      }
+      throw ragFailureFromDio(e);
+    } catch (_) {
+      throw const RagBadResponse('Unexpected error while downloading');
     }
   }
 
@@ -77,39 +117,4 @@ class HttpRagService implements IRagService {
     }
     return hits;
   }
-
-  RagFailure _map(DioException e) {
-    final response = e.response;
-    if (response == null) {
-      return RagNetworkFailure(switch (e.type) {
-        DioExceptionType.connectionTimeout ||
-        DioExceptionType.receiveTimeout ||
-        DioExceptionType.sendTimeout => 'Connection timed out',
-        DioExceptionType.badCertificate => 'Untrusted server certificate',
-        _ => 'Could not reach the server',
-      });
-    }
-    final status = response.statusCode ?? 0;
-    final body = response.data;
-    final code = body is Map && body['code'] is String
-        ? body['code'] as String
-        : null;
-    final message = body is Map && body['message'] is String
-        ? _short(body['message'] as String)
-        : 'HTTP $status';
-    return switch (status) {
-      401 => RagUnauthorized(message, code: code),
-      429 => RagRateLimited(
-        message,
-        code: code,
-        retryAfterSeconds: int.tryParse(
-          response.headers.value('retry-after') ?? '',
-        ),
-      ),
-      _ => RagServerFailure(status, message, code: code),
-    };
-  }
-
-  static String _short(String text) =>
-      text.length <= 200 ? text : text.substring(0, 200);
 }

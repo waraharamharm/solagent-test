@@ -7,6 +7,7 @@
 | Dir | `~/solrag/{app,venv,data}` |
 | Service | `~/.config/systemd/user/solrag.service` (`127.0.0.1:8795`, `MemoryMax` 1500M, `linger` включён) |
 | nginx | `sites-enabled/solrag` (чужие сайты не затрагиваются), nginx 1.24 → без `http2 on` |
+| Push relay | `~/solrag/solrag.env` (`SOLRAG_FCM_CREDENTIALS`) -> `~/solrag/secrets/fcm-service-account.json` (600); `pip install ./app[push]` |
 | TLS | certbot, сертификат до 2027-01-25, автопродление |
 | nginx limits | тело 64 КБ, 10 запросов/с на IP, ответы 413/429/503 тоже JSON |
 

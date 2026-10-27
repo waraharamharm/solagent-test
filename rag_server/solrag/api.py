@@ -8,7 +8,7 @@ from fastapi import Depends, FastAPI, Path, Request, status
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
-from . import bundle, store
+from . import bundle, relay, store
 from .auth import KeyInfo, verify_key
 from .bodylimit import BodyLimitMiddleware
 from .config import Settings
@@ -54,6 +54,26 @@ class SolutionAccepted(BaseModel):
     status: str
 
 
+class RunRequest(BaseModel):
+    fcm_token: str = Field(pattern=r"^[A-Za-z0-9_:.\-]{20,4096}$")
+    lang: str = Field(default="en", pattern=r"^[a-z]{2}$")
+
+
+class RunCreated(BaseModel):
+    run_id: str
+    run_token: str
+    expires_in: int
+
+
+class CheckpointRequest(BaseModel):
+    step: str = Field(pattern=relay.STEP_PATTERN)
+    state: str = Field(pattern=r"^(started|done|failed|finished)$")
+
+
+class CheckpointAccepted(BaseModel):
+    pushed: bool
+
+
 class Health(BaseModel):
     status: str
 
@@ -66,8 +86,11 @@ def create_app(
     settings: Settings,
     embedder: Embedder | None = None,
     clock: Callable[[], float] | None = None,
+    push_sender: relay.PushSender | None = None,
 ) -> FastAPI:
     limiter = SlidingWindowLimiter(clock) if clock else SlidingWindowLimiter()
+
+    sender = push_sender or relay.build_sender(settings.fcm_credentials)
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
@@ -91,7 +114,11 @@ def create_app(
 
     Conn = Annotated[sqlite3.Connection, Depends(get_conn)]
 
-    def authenticate(request: Request, conn: Conn) -> KeyInfo:
+    def bearer_token(request: Request) -> str:
+        scheme, _, token = request.headers.get("authorization", "").partition(" ")
+        return token.strip() if scheme.lower() == "bearer" else ""
+
+    def guard_failures(request: Request) -> str:
         ip = request.client.host if request.client else "unknown"
         wait = limiter.blocked(("auth-fail", ip), settings.auth_failures_per_minute, _MINUTE)
         if wait is not None:
@@ -99,11 +126,17 @@ def create_app(
                 429, "too_many_failures", "Too many failed authentication attempts; retry later",
                 _retry_after(wait),
             )
-        scheme, _, token = request.headers.get("authorization", "").partition(" ")
-        info = verify_key(conn, token.strip()) if scheme.lower() == "bearer" else None
+        return ip
+
+    def reject(ip: str, message: str) -> ApiError:
+        limiter.record(("auth-fail", ip), _MINUTE)
+        return ApiError(401, "unauthorized", message, {"WWW-Authenticate": "Bearer"})
+
+    def authenticate(request: Request, conn: Conn) -> KeyInfo:
+        ip = guard_failures(request)
+        info = verify_key(conn, bearer_token(request))
         if info is None:
-            limiter.record(("auth-fail", ip), _MINUTE)
-            raise ApiError(401, "unauthorized", "Missing or invalid API key", {"WWW-Authenticate": "Bearer"})
+            raise reject(ip, "Missing or invalid API key")
         return info
 
     Client = Annotated[KeyInfo, Depends(authenticate)]
@@ -165,5 +198,38 @@ def create_app(
             conn, error=error, solution=solution, os=req.os, key_id=client.id
         )
         return SolutionAccepted(id=solution_id, status=state)
+
+    @app.post("/v1/runs", response_model=RunCreated, status_code=status.HTTP_201_CREATED)
+    def create_run(req: RunRequest, conn: Conn, client: Client) -> RunCreated:
+        enforce(client, "runs", settings.runs_per_hour, _HOUR)
+        if not sender.available:
+            raise ApiError(503, "push_unavailable", "Push notifications are not configured on this server")
+        lang = req.lang if req.lang in relay.LANGUAGES else "en"
+        run_id, token = relay.create_run(conn, client.id, req.fcm_token, lang)
+        return RunCreated(run_id=run_id, run_token=token, expires_in=relay.RUN_TTL_HOURS * 3600)
+
+    @app.post("/v1/runs/{run_id}/checkpoints", response_model=CheckpointAccepted)
+    def checkpoint(
+        run_id: Annotated[str, Path(pattern=r"^[0-9a-f]{16}$")],
+        req: CheckpointRequest,
+        request: Request,
+        conn: Conn,
+    ) -> CheckpointAccepted:
+        ip = guard_failures(request)
+        run = relay.find_run(conn, run_id, bearer_token(request))
+        if run is None:
+            raise reject(ip, "Missing, invalid or expired run token")
+        wait = limiter.check(("checkpoint", run.id), settings.checkpoints_per_hour, _HOUR)
+        if wait is not None:
+            raise ApiError(429, "rate_limited", "Rate limit exceeded for checkpoints", _retry_after(wait))
+        if req.state not in relay.PUSHED_STATES:
+            return CheckpointAccepted(pushed=False)
+        title, body = relay.push_text(run.lang, req.step, req.state)
+        if not sender.send(run.fcm_token, title, body):
+            relay.delete_run(conn, run.id)
+            return CheckpointAccepted(pushed=False)
+        if req.state == "finished":
+            relay.delete_run(conn, run.id)
+        return CheckpointAccepted(pushed=True)
 
     return app

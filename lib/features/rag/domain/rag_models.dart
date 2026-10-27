@@ -1,3 +1,5 @@
+import 'knowledge_bundle.dart';
+
 /// One passage returned by the knowledge server.
 class RagHit {
   const RagHit({
@@ -25,6 +27,11 @@ abstract interface class IRagService {
   /// [query] must already be free of secrets and private addresses: it leaves
   /// the phone. Throws only [RagFailure].
   Future<List<RagHit>> search(String query, {String? os, int k = 4});
+
+  /// Downloads the published knowledge snapshot and verifies it against its
+  /// manifest. Throws only [RagFailure]; a snapshot that fails any check is
+  /// never returned.
+  Future<KnowledgeBundle> fetchBundle();
 }
 
 sealed class RagFailure implements Exception {

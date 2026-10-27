@@ -46,7 +46,7 @@ final class FixRunProvider extends $NotifierProvider<FixRun, FixRunState> {
   }
 }
 
-String _$fixRunHash() => r'9263941ac7684779eeea9027e97e15f8b4d60d69';
+String _$fixRunHash() => r'6f04160b96cbaced3b511c5b6c9355827ef9ef50';
 
 /// Runs [FixLoop] against the saved server and turns its events into what the
 /// screens show. Opening the server is [FixSessionFactory]'s job.
