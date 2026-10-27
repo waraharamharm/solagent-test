@@ -1,40 +1,40 @@
 ﻿## Why
 
-A real Flexisip build takes about 40 minutes. Today the app must stay open and
-the SSH session must stay alive for the whole run; if Android freezes the app
-or the connection drops, the user does not know whether the install finished.
-Stage 9 of the product plan (`docs/STATUS.md`) adds a foreground service, push
-notifications (FCM) and a relay that sends checkpoint pushes.
+Настоящая сборка Flexisip идёт около 40 минут. Сейчас приложение должно оставаться
+открытым, а SSH-сессия живой всё это время. Если Android заморозит приложение или
+связь оборвётся, пользователь не узнает, закончилась ли установка. Этап 9 плана
+(`docs/STATUS.md`) добавляет Foreground Service, пуш-уведомления (FCM) и
+ретранслятор, который шлёт пуши по контрольным точкам.
 
 ## What Changes
 
-- Android foreground service keeps a long install monitored and visible in a
-  persistent notification with the current step.
-- Long installs run on the VDS detached from the SSH session (survives a lost
-  connection) and write checkpoints to a file on the VDS.
-- The app registers its FCM token with a relay on the knowledge server host.
-- The relay sends a push when a checkpoint arrives (step done, failed, finished)
-  while the app is not in the foreground.
-- Android 13+ notification permission flow and Firebase setup
-  (`google-services.json`, not committed).
+- Android Foreground Service держит долгую установку под наблюдением и показывает
+  постоянное уведомление с текущим шагом.
+- Долгая установка работает на VDS отдельно от SSH-сессии (переживает обрыв связи)
+  и пишет контрольные точки в лог на VDS.
+- Приложение регистрирует свой токен FCM у ретранслятора на сервере знаний.
+- Ретранслятор шлёт пуш, когда приходит контрольная точка (шаг выполнен, ошибка,
+  установка завершена), даже если приложение не на переднем плане.
+- Запрос разрешения на уведомления (Android 13+) и настройка Firebase
+  (`google-services.json`, в репозиторий не попадает).
 
-Out of scope: the real Flexisip install scripts (stage 10), iOS push,
-multi-server installs.
+Вне рамок: сами скрипты установки Flexisip (этап 10), пуши на iOS, установка на
+несколько серверов.
 
 ## Capabilities
 
 ### New Capabilities
-- `background-monitoring`: foreground service, detached install, checkpoints,
-  relay and push notifications.
+- `background-monitoring`: Foreground Service, отдельный запуск установки, контрольные
+  точки, ретранслятор и пуш-уведомления.
 
 ### Modified Capabilities
-- none (no specs exist yet; older stages are documented in `docs/`).
+- нет (спецификаций пока не было; прошлые этапы описаны в `docs/`).
 
 ## Impact
 
-- New: `lib/features/monitor/**`, Android manifest, `rag_server` relay endpoints
-  (or a sibling `relay/` service), docs.
-- New dependencies (each needs approval): `firebase_core`, `firebase_messaging`,
-  a foreground-service plugin.
-- Security-sensitive: remote command execution on the VDS, token handling, relay
-  authentication. The orchestrator implements these parts, not subagents.
+- Новое: `lib/features/monitor/**`, манифест Android, эндпоинты ретранслятора в
+  `rag_server`, документация.
+- Новые зависимости (каждая согласована): `firebase_core`, `firebase_messaging`,
+  `flutter_foreground_task`.
+- Связано с безопасностью: удалённое выполнение команд на VDS, работа с токенами,
+  аутентификация ретранслятора. Эти части пишет оркестратор, не субагенты.

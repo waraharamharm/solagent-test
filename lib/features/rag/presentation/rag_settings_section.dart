@@ -11,8 +11,9 @@ import '../application/rag_providers.dart';
 import '../domain/rag_models.dart';
 import '../l10n/rag_failure_text.dart';
 
-/// Address, access key and a connection check for the knowledge base, shown
-/// at the bottom of the AI screen.
+/// Access key and a connection check for the knowledge base, shown at the
+/// bottom of the AI screen. The server address is deliberately not shown: the
+/// default is used.
 class RagSettingsSection extends ConsumerStatefulWidget {
   const RagSettingsSection({super.key});
 
@@ -21,13 +22,10 @@ class RagSettingsSection extends ConsumerStatefulWidget {
 }
 
 class _RagSettingsSectionState extends ConsumerState<RagSettingsSection> {
-  final _urlController = TextEditingController();
   final _keyController = TextEditingController();
-  String? _syncedUrl;
 
   @override
   void dispose() {
-    _urlController.dispose();
     _keyController.dispose();
     super.dispose();
   }
@@ -45,13 +43,6 @@ class _RagSettingsSectionState extends ConsumerState<RagSettingsSection> {
       if (mounted) _showMessage(appProblemText(context.l10n, e.problem));
     }
   }
-
-  Future<void> _saveUrl() => _guard(() async {
-    await ref
-        .read(ragSettingsControllerProvider.notifier)
-        .updateBaseUrl(_urlController.text);
-    if (mounted) _showMessage(context.l10n.llmSettingsSaved);
-  });
 
   Future<void> _saveKey() => _guard(() async {
     await ref
@@ -89,30 +80,11 @@ class _RagSettingsSectionState extends ConsumerState<RagSettingsSection> {
     final scheme = Theme.of(context).colorScheme;
     final settings = ref.watch(ragSettingsControllerProvider).value;
     if (settings == null) return const SizedBox.shrink();
-    if (_syncedUrl != settings.baseUrl) {
-      _syncedUrl = settings.baseUrl;
-      _urlController.text = settings.baseUrl;
-    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         GroupHeader(l10n.ragSectionTitle),
         Text(l10n.ragHint, style: Theme.of(context).textTheme.bodySmall),
-        const SizedBox(height: AppSpace.md),
-        TextField(
-          controller: _urlController,
-          keyboardType: TextInputType.url,
-          autocorrect: false,
-          decoration: InputDecoration(labelText: l10n.ragAddressLabel),
-        ),
-        const SizedBox(height: AppSpace.md),
-        Align(
-          alignment: Alignment.centerLeft,
-          child: FilledButton(
-            onPressed: _saveUrl,
-            child: Text(l10n.commonSave),
-          ),
-        ),
         const SizedBox(height: AppSpace.md),
         if (settings.hasApiKey)
           GroupedList(

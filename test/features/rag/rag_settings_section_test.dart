@@ -61,7 +61,6 @@ void main() {
     final store = MemoryStore();
     await _pump(tester, store);
     expect(find.text('Knowledge base'), findsOneWidget);
-    expect(find.text('https://rag.mtoper.ru'), findsOneWidget);
 
     await tester.enterText(
       find.widgetWithText(TextField, 'Access key'),
@@ -86,17 +85,10 @@ void main() {
     expect(store.values.containsKey('rag.apiKey'), isFalse);
   });
 
-  testWidgets('an insecure address is refused and not saved', (tester) async {
-    final store = MemoryStore();
-    await _pump(tester, store);
-    await tester.enterText(
-      find.widgetWithText(TextField, 'Server address'),
-      'http://rag.example.com',
-    );
-    await tester.tap(find.text('Save'));
-    await tester.pumpAndSettle();
-    expect(store.values.containsKey('rag.baseUrl'), isFalse);
-    expect(find.byType(SnackBar), findsOneWidget);
+  testWidgets('the server address is not shown anywhere', (tester) async {
+    await _pump(tester, MemoryStore());
+    expect(find.text('Server address'), findsNothing);
+    expect(find.textContaining('mtoper'), findsNothing);
   });
 
   testWidgets('the check is disabled until a key exists', (tester) async {

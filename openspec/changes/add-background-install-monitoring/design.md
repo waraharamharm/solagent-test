@@ -1,43 +1,45 @@
 ## Context
 
-The app opens SSH sessions through `ISshConnector` and runs scripts via
-`DeployEngine`. Every AI command still needs user confirmation. The knowledge
-server (`rag_server`, FastAPI, Bearer `sol_...` keys) already runs at
+Приложение открывает SSH-сессии через `ISshConnector` и запускает скрипты через
+`DeployEngine`. Каждую команду ИИ по-прежнему подтверждает пользователь. Сервер
+знаний (`rag_server`, FastAPI, ключи `Bearer sol_...`) уже работает на
 `https://rag.mtoper.ru`.
 
 ## Decisions
 
-1. **Detached install on the VDS.** Already done in stage 1: `DeployEngine`
-   starts the script with `setsid nohup` and the app polls its log. Losing SSH
-   does not kill the build; `RunMonitor` reconnects.
-2. **Checkpoint format.** A log line `@@SOLAGENT {"step":"...","state":"started|done|failed|finished"}`.
-   No logs and no secrets in checkpoints; logs stay on the VDS and are
-   redacted by `LogRedactor` before the AI sees them.
-3. **Relay lives in `rag_server`.** One more FastAPI router, same key auth and
-   rate limits, so no new host. The FCM service account exists only on the
-   server, never in the app or the repo.
-4. **Who pushes.** The user's VDS posts a checkpoint to the relay using a
-   per-run token issued when the run starts. The relay validates the token,
-   looks up the device token registered for that run, and sends a data-free
-   notification (step name and state only).
-5. **App-side monitoring.** A foreground service (`dataSync`) holds a wake lock
-   only while a run is active; the monitor polls the job log over SSH; push is
-   the fallback when the service is killed.
-   Push uses `notification` messages rendered by the system, so no local
-   notification dependency is needed.
-6. **Permissions.** Android 13+ `POST_NOTIFICATIONS` asked at the first run,
-   not at launch. Foreground service type `dataSync`; verify against current
-   Play policy before release.
+1. **Отдельный запуск установки на VDS.** Уже сделано на этапе 1: `DeployEngine`
+   запускает скрипт через `setsid nohup`, приложение опрашивает его лог. Обрыв SSH
+   сборку не убивает; `RunMonitor` переподключается.
+2. **Формат контрольной точки.** Строка лога
+   `@@SOLAGENT {"step":"...","state":"started|done|failed|finished"}`.
+   Ни логов, ни секретов в контрольных точках нет; логи остаются на VDS и очищаются
+   `LogRedactor` до того, как их увидит ИИ.
+3. **Ретранслятор живёт в `rag_server`.** Ещё один роутер FastAPI с теми же ключами и
+   лимитами, новый хост не нужен. Сервисный аккаунт FCM лежит только на сервере, не в
+   приложении и не в репозитории.
+4. **Кто шлёт пуш.** VDS пользователя отправляет контрольную точку ретранслятору с
+   токеном запуска, выданным при старте. Ретранслятор проверяет токен, находит токен
+   устройства, зарегистрированный для этого запуска, и шлёт уведомление без данных
+   (только имя шага и состояние).
+5. **Наблюдение в приложении.** Foreground Service (`dataSync`) держит wake lock только
+   пока идёт запуск; монитор опрашивает лог задачи по SSH; пуш подстраховывает на
+   случай, если сервис убьют. Пуши идут как `notification`-сообщения, которые рисует
+   система, поэтому зависимость для локальных уведомлений не нужна.
+6. **Разрешения.** `POST_NOTIFICATIONS` (Android 13+) запрашивается при первом запуске,
+   а не при старте приложения. Тип сервиса `dataSync`; перед релизом свериться с
+   текущими правилами Play.
+7. **Сбой шага не завершает запуск.** После ошибки идёт исправление и повторный
+   запуск, поэтому токен запуска живёт до `finished` или истечения срока.
 
 ## Risks / Trade-offs
 
-- Battery optimizations on some phones kill foreground services; push covers it.
-- The VDS must reach the relay over HTTPS; if blocked, the app still polls.
-- A leaked run token allows spam pushes for that run only; tokens expire when the
-  run ends and the relay rate-limits per token.
+- Оптимизация батареи на некоторых телефонах убивает сервисы; подстраховывает пуш.
+- VDS должен достучаться до ретранслятора по HTTPS; если заблокировано, приложение
+  всё равно опрашивает лог.
+- Утёкший токен запуска позволяет слать пуши только для этого запуска; токены
+  истекают через 24 часа, ретранслятор ограничивает частоту по токену.
 
 ## Open Questions
 
-- Firebase project and `google-services.json` from Tim.
-- Package name of the Android app registered in Firebase.
-- Whether the uncle wants the relay inside `rag_server` or as a separate service.
+- Остаётся ли ретранслятор внутри `rag_server` или выносится в отдельный сервис
+  (решает дядя).

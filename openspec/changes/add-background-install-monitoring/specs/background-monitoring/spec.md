@@ -1,47 +1,57 @@
 ## ADDED Requirements
 
-### Requirement: Install survives a lost SSH connection
-The system SHALL start a long install detached from the SSH session and record
-progress as checkpoints on the VDS.
+### Requirement: Установка переживает обрыв SSH-соединения
+Система SHALL запускать долгую установку отдельно от SSH-сессии и записывать ход
+выполнения как контрольные точки на VDS.
 
-#### Scenario: Connection drops mid-install
-- **WHEN** the SSH session closes while the install is running
-- **THEN** the install keeps running on the VDS
-- **AND** the app can reconnect and read the latest checkpoint
+#### Scenario: Соединение оборвалось посреди установки
+- **WHEN** SSH-сессия закрывается, пока идёт установка
+- **THEN** установка продолжает работать на VDS
+- **AND** приложение может переподключиться и прочитать последнюю контрольную точку
 
-### Requirement: Active run is visible in a foreground notification
-The system SHALL show a persistent notification with the current step while a
-run is monitored, and SHALL remove it when the run ends.
+### Requirement: Запуск виден в уведомлении Foreground Service
+Система SHALL показывать постоянное уведомление с текущим шагом, пока запуск
+отслеживается, и SHALL убирать его, когда запуск закончился.
 
-#### Scenario: Run in progress
-- **WHEN** a monitored run is active
-- **THEN** a foreground notification shows the current step
+#### Scenario: Запуск идёт
+- **WHEN** отслеживаемый запуск активен
+- **THEN** в уведомлении Foreground Service виден текущий шаг
 
-### Requirement: Checkpoints reach the user by push
-The relay SHALL send a push notification for each checkpoint with state
-`failed` or `finished`, and for `done` when the app is not in the foreground.
+### Requirement: Контрольные точки доходят до пользователя пушем
+Ретранслятор SHALL отправлять пуш для каждой контрольной точки с состоянием `done`,
+`failed` или `finished`.
 
-#### Scenario: App is closed when the run finishes
-- **WHEN** a `finished` checkpoint arrives at the relay for a registered device
-- **THEN** the device receives a notification naming the server and the result
+#### Scenario: Приложение закрыто, когда установка завершилась
+- **WHEN** на ретранслятор приходит контрольная точка `finished` для зарегистрированного устройства
+- **THEN** устройство получает уведомление с результатом
 
-### Requirement: Pushes carry no sensitive data
-A push payload MUST NOT contain logs, command output, secrets, IP addresses or
-host names; only the step name and state.
+#### Scenario: Новый пуш заменяет предыдущий
+- **WHEN** приходит новая контрольная точка того же запуска
+- **THEN** уведомление заменяет предыдущее, а не добавляется рядом
 
-#### Scenario: Failed step
-- **WHEN** a step fails
-- **THEN** the push contains the step name and state `failed`
-- **AND** no log text
+### Requirement: Пуши не содержат чувствительных данных
+Содержимое пуша MUST NOT включать логи, вывод команд, секреты, IP-адреса или имена
+хостов; только имя шага и состояние.
 
-### Requirement: Relay authentication and limits
-The relay SHALL accept checkpoints only with a valid per-run token and SHALL
-rate-limit per token. The FCM credential MUST exist only on the relay host.
+#### Scenario: Шаг завершился ошибкой
+- **WHEN** шаг падает
+- **THEN** пуш содержит имя шага и состояние `failed`
+- **AND** не содержит текста лога
 
-#### Scenario: A failed step does not end the run
-- **WHEN** a `failed` checkpoint is reported
-- **THEN** the push is sent and the run token stays valid until `finished` or expiry
+### Requirement: Сбой шага не завершает запуск
+Токен запуска SHALL оставаться действительным после контрольной точки `failed` до
+контрольной точки `finished` или истечения срока.
 
-#### Scenario: Unknown token
-- **WHEN** a checkpoint arrives with an unknown or expired token
-- **THEN** the relay rejects it with 401 and sends no push
+#### Scenario: Шаг упал, затем исправлен и запущен заново
+- **WHEN** приходит контрольная точка `failed`
+- **THEN** пуш отправляется, а токен запуска остаётся действительным
+- **AND** последующие контрольные точки этого запуска принимаются
+
+### Requirement: Аутентификация ретранслятора и лимиты
+Ретранслятор SHALL принимать контрольные точки только с действительным токеном
+запуска и SHALL ограничивать частоту по токену. Учётные данные FCM MUST храниться
+только на хосте ретранслятора.
+
+#### Scenario: Неизвестный токен
+- **WHEN** приходит контрольная точка с неизвестным или просроченным токеном
+- **THEN** ретранслятор отвечает 401 и не шлёт пуш
