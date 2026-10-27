@@ -4,32 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:solagent/features/fix/domain/log_redactor.dart';
 import 'package:solagent/features/journal/data/journal_store.dart';
 import 'package:solagent/features/journal/domain/journal_entry.dart';
-import 'package:solagent/features/ssh/domain/i_ssh_client.dart';
-import 'package:solagent/features/ssh/domain/ssh_target.dart';
 
-class _FakeSession implements ISshSession {
-  final commands = <String>[];
-  String stdout = '';
-  int exitCode = 0;
-
-  @override
-  SshTarget get target => const SshTarget(host: '203.0.113.7', username: 'u');
-
-  @override
-  bool get isClosed => false;
-
-  @override
-  Future<SshCommandResult> run(
-    String command, {
-    Duration timeout = const Duration(minutes: 1),
-  }) async {
-    commands.add(command);
-    return SshCommandResult(exitCode: exitCode, stdout: stdout, stderr: '');
-  }
-
-  @override
-  Future<void> close() async {}
-}
+import '../../support/fake_ssh_session.dart';
 
 Map<String, Object?> _writtenLine(String command) {
   final b64 = RegExp(r'echo ([A-Za-z0-9+/=]+) \| base64 -d')
@@ -89,7 +65,7 @@ void main() {
 
   group('JournalStore.append', () {
     test('writes one redacted line, private, with rotation', () async {
-      final session = _FakeSession();
+      final session = FakeSshSession();
       await JournalStore(session, redactor).append(
         JournalEntry(
           time: DateTime.utc(2026, 10, 27),
@@ -114,7 +90,7 @@ void main() {
     });
 
     test('a failing write throws JournalFailure', () async {
-      final session = _FakeSession()..exitCode = 1;
+      final session = FakeSshSession()..exitCode = 1;
       expect(
         () => JournalStore(session, redactor).append(
           JournalEntry(
@@ -136,7 +112,7 @@ void main() {
     });
 
     test('returns the newest entries, oldest first, skipping junk', () async {
-      final session = _FakeSession()
+      final session = FakeSshSession()
         ..stdout = [
           'partial line cut by tail -c',
           for (var i = 0; i < 5; i++) line(i),
@@ -154,12 +130,12 @@ void main() {
     });
 
     test('a missing file is an empty journal', () async {
-      final session = _FakeSession();
+      final session = FakeSshSession();
       expect(await JournalStore(session, redactor).readRecent(), isEmpty);
     });
 
     test('oversized lines are ignored', () async {
-      final session = _FakeSession()
+      final session = FakeSshSession()
         ..stdout = '{"t":"2026-01-01T00:00:00Z","s":"${'x' * 9000}"}';
       expect(await JournalStore(session, redactor).readRecent(), isEmpty);
     });

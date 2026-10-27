@@ -4,10 +4,11 @@ import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:solagent/core/errors/app_problem.dart';
-import 'package:solagent/core/security/secure_store.dart';
 import 'package:solagent/features/rag/data/http_rag_service.dart';
 import 'package:solagent/features/rag/data/rag_settings_repository.dart';
 import 'package:solagent/features/rag/domain/rag_models.dart';
+
+import '../../support/memory_store.dart';
 
 class _Adapter implements HttpClientAdapter {
   _Adapter(this.respond);
@@ -47,16 +48,6 @@ HttpRagService _service(_Adapter adapter) => HttpRagService(
   dio: Dio()..httpClientAdapter = adapter,
 );
 
-class _MemoryStore implements SecureStore {
-  final values = <String, String>{};
-  @override
-  Future<String?> read(String key) async => values[key];
-  @override
-  Future<void> write(String key, String value) async => values[key] = value;
-  @override
-  Future<void> delete(String key) async => values.remove(key);
-}
-
 void main() {
   group('HttpRagService', () {
     test(
@@ -91,7 +82,7 @@ void main() {
     );
 
     test('the query is cut to the server limit', () async {
-      final adapter = _Adapter((_) => _json(200, {'results': []}));
+      final adapter = _Adapter((_) => _json(200, {'results': <Object?>[]}));
       await _service(adapter).search('x' * 9000);
       expect(
         ((adapter.last!.data as Map)['query'] as String).length,
@@ -214,7 +205,7 @@ void main() {
 
   group('RagSettingsRepository', () {
     test('defaults to the project server and has no key', () async {
-      final repo = RagSettingsRepository(_MemoryStore());
+      final repo = RagSettingsRepository(MemoryStore());
       final s = await repo.load();
       expect(s.baseUrl, defaultRagUrl);
       expect(s.hasApiKey, isFalse);
@@ -222,7 +213,7 @@ void main() {
     });
 
     test('key is stored trimmed and exposed only through the config', () async {
-      final store = _MemoryStore();
+      final store = MemoryStore();
       final repo = RagSettingsRepository(store);
       await repo.saveApiKey('  $_secret \n');
       expect((await repo.load()).hasApiKey, isTrue);
@@ -234,7 +225,7 @@ void main() {
     });
 
     test('an empty key and an insecure address are refused', () async {
-      final store = _MemoryStore();
+      final store = MemoryStore();
       final repo = RagSettingsRepository(store);
       await expectLater(
         repo.saveApiKey('   '),

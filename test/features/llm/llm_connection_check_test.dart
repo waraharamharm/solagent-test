@@ -5,24 +5,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:solagent/core/l10n/l10n.dart';
 import 'package:solagent/core/security/secure_store.dart';
 import 'package:solagent/features/llm/application/llm_connection_check.dart';
+import 'package:solagent/features/llm/l10n/llm_failure_text.dart';
 import 'package:solagent/features/llm/application/llm_providers.dart';
 import 'package:solagent/features/llm/domain/chat_message.dart';
 import 'package:solagent/features/llm/domain/i_llm_service.dart';
 import 'package:solagent/features/llm/domain/llm_failure.dart';
 import 'package:solagent/features/llm/domain/llm_preset.dart';
 
-class _MemoryStore implements SecureStore {
-  final _values = <String, String>{};
-
-  @override
-  Future<String?> read(String key) async => _values[key];
-
-  @override
-  Future<void> write(String key, String value) async => _values[key] = value;
-
-  @override
-  Future<void> delete(String key) async => _values.remove(key);
-}
+import '../../support/memory_store.dart';
 
 class _FakeService implements ILLMService {
   _FakeService({this.reply = 'ok', this.failure});
@@ -105,7 +95,7 @@ void main() {
   test('result resets when settings change', () async {
     final c = ProviderContainer(
       overrides: [
-        secureStoreProvider.overrideWithValue(_MemoryStore()),
+        secureStoreProvider.overrideWithValue(MemoryStore()),
         llmServiceProvider.overrideWith((ref) async => _FakeService()),
       ],
     );

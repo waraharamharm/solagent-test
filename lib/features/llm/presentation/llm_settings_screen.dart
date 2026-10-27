@@ -7,7 +7,7 @@ import '../../../core/l10n/problem_text.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/ui/grouped_list.dart';
 import '../../../core/ui/wavy_progress.dart';
-import '../../rag/presentation/rag_settings_section.dart';
+import '../../../core/validation/base_url.dart';
 import '../application/llm_connection_check.dart';
 import '../application/llm_providers.dart';
 import '../domain/llm_preset.dart';
@@ -15,7 +15,11 @@ import '../domain/llm_settings.dart';
 import 'llm_texts.dart';
 
 class LlmSettingsScreen extends ConsumerStatefulWidget {
-  const LlmSettingsScreen({super.key});
+  const LlmSettingsScreen({super.key, this.footer});
+
+  /// Extra sections shown under the connection check, supplied by the app
+  /// shell so this feature does not depend on the others.
+  final Widget? footer;
 
   @override
   ConsumerState<LlmSettingsScreen> createState() => _LlmSettingsScreenState();
@@ -223,8 +227,10 @@ class _LlmSettingsScreenState extends ConsumerState<LlmSettingsScreen> {
         ],
         GroupHeader(l10n.llmSectionCheck),
         _ConnectionCheckBlock(ok: status.ok),
-        const SizedBox(height: AppSpace.lg),
-        const RagSettingsSection(),
+        if (widget.footer case final footer?) ...[
+          const SizedBox(height: AppSpace.lg),
+          footer,
+        ],
       ],
     );
   }

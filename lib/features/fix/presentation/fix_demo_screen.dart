@@ -6,17 +6,18 @@ import '../../../core/l10n/l10n.dart';
 import '../../../core/l10n/problem_text.dart';
 import '../../../core/security/biometric_guard.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/ui/cookie_shape.dart';
 import '../../../core/ui/wavy_progress.dart';
 import '../../server/application/server_providers.dart';
-import '../../server/presentation/server_screen.dart';
+import '../../server/l10n/server_texts.dart';
 import '../../ssh/domain/ssh_failure.dart';
 import '../application/fix_loop.dart';
 import '../application/fix_run_controller.dart';
-import '../domain/command_policy.dart';
-import '../domain/fix_models.dart';
-import '../l10n/command_texts.dart';
+import '../application/fix_run_state.dart';
+import '../domain/fix_demo_script.dart';
 import '../l10n/fix_texts.dart';
+import 'widgets/decision_card.dart';
+import 'widgets/log_card.dart';
+import 'widgets/run_route.dart';
 
 class FixDemoScreen extends StatelessWidget {
   const FixDemoScreen({super.key});
@@ -76,7 +77,7 @@ class _FixDemoView extends ConsumerWidget {
             ],
             const SizedBox(height: AppSpace.lg),
             if (pending != null)
-              _DecisionCard(
+              DecisionCard(
                 proposal: pending,
                 onDecide: (approve) => run.decide(approve: approve),
               )
@@ -97,7 +98,7 @@ class _FixDemoView extends ConsumerWidget {
               ),
             if (error != null) ...[
               const SizedBox(height: AppSpace.lg),
-              _Notice(
+              FixNotice(
                 icon: Icons.error_rounded,
                 color: scheme.error,
                 text: _errorText(l10n, error),
@@ -105,11 +106,11 @@ class _FixDemoView extends ConsumerWidget {
             ],
             if (s.steps.isNotEmpty) ...[
               const SizedBox(height: AppSpace.xl),
-              _Route(steps: s.steps, shownAbove: pending?.diagnosis),
+              RunRoute(steps: s.steps, shownAbove: pending?.diagnosis),
             ],
             if (s.log.isNotEmpty) ...[
               const SizedBox(height: AppSpace.lg),
-              _LogCard(lines: s.log),
+              LogCard(lines: s.log),
             ],
           ],
         ),
@@ -166,378 +167,4 @@ class _FixDemoView extends ConsumerWidget {
     AppProblemError(:final problem) => appProblemText(l10n, problem),
     _ => l10n.fixDemoErrStartFailed('$e'),
   };
-}
-
-/// The AI's proposal: what broke in words, the exact command, what it will
-/// change, and two explicit buttons. Nothing runs before "Выполнить".
-class _DecisionCard extends StatelessWidget {
-  const _DecisionCard({required this.proposal, required this.onDecide});
-
-  final FixProposal proposal;
-  final ValueChanged<bool> onDecide;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-    final status = StatusColors.of(context);
-    final l10n = context.l10n;
-    final warnings = proposal.verdict?.warnings ?? const <CommandWarning>[];
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(top: 2),
-              child: CookieShape(size: 28, color: scheme.primary),
-            ),
-            const SizedBox(width: AppSpace.md),
-            Expanded(
-              child: Text(
-                proposal.diagnosis,
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
-                  height: 1.4,
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: AppSpace.lg),
-        Container(
-          padding: const EdgeInsets.all(AppSpace.lg),
-          decoration: BoxDecoration(
-            color: scheme.surfaceContainerHigh,
-            borderRadius: BorderRadius.circular(AppRadius.card),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: double.infinity,
-                constraints: const BoxConstraints(maxHeight: 180),
-                padding: const EdgeInsets.all(AppSpace.md),
-                decoration: BoxDecoration(
-                  color: scheme.surface,
-                  borderRadius: BorderRadius.circular(AppSpace.md),
-                ),
-                child: SingleChildScrollView(
-                  child: SelectableText(
-                    proposal.command ?? '',
-                    style: const TextStyle(
-                      fontFamily: 'monospace',
-                      fontSize: 14,
-                      height: 1.5,
-                    ),
-                  ),
-                ),
-              ),
-              if (proposal.explanation.isNotEmpty)
-                _Effect(
-                  icon: Icons.info_outline_rounded,
-                  color: scheme.onSurfaceVariant,
-                  text: proposal.explanation,
-                ),
-              for (final w in warnings)
-                _Effect(
-                  icon: Icons.warning_rounded,
-                  color: status.warn,
-                  text: commandWarningText(l10n, w),
-                ),
-              const SizedBox(height: AppSpace.lg),
-              Row(
-                children: [
-                  Expanded(
-                    child: FilledButton.tonal(
-                      style: FilledButton.styleFrom(
-                        minimumSize: const Size(64, 52),
-                      ),
-                      onPressed: () => onDecide(false),
-                      child: Text(context.l10n.fixDemoDecline),
-                    ),
-                  ),
-                  const SizedBox(width: AppSpace.sm),
-                  Expanded(
-                    child: FilledButton(
-                      style: FilledButton.styleFrom(
-                        minimumSize: const Size(64, 52),
-                      ),
-                      onPressed: () => onDecide(true),
-                      child: Text(context.l10n.fixDemoApprove),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _Effect extends StatelessWidget {
-  const _Effect({required this.icon, required this.color, required this.text});
-
-  final IconData icon;
-  final Color color;
-  final String text;
-
-  @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(top: AppSpace.md),
-    child: Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Icon(icon, size: 20, color: color),
-        const SizedBox(width: AppSpace.md),
-        Expanded(
-          child: Text(text, style: TextStyle(color: color, height: 1.35)),
-        ),
-      ],
-    ),
-  );
-}
-
-class _Notice extends StatelessWidget {
-  const _Notice({required this.icon, required this.color, required this.text});
-
-  final IconData icon;
-  final Color color;
-  final String text;
-
-  @override
-  Widget build(BuildContext context) => Row(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Icon(icon, color: color),
-      const SizedBox(width: AppSpace.md),
-      Expanded(
-        child: Text(text, style: TextStyle(color: color)),
-      ),
-    ],
-  );
-}
-
-/// The run as a route: settled steps as filled or failed stops joined by a
-/// line, the live one as the turning cookie.
-class _Route extends StatelessWidget {
-  const _Route({required this.steps, this.shownAbove});
-
-  final List<FixStep> steps;
-
-  /// Text already on screen in the decision card; not repeated in a step.
-  final String? shownAbove;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-    final status = StatusColors.of(context);
-    return Column(
-      children: [
-        for (var i = 0; i < steps.length; i++)
-          IntrinsicHeight(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                SizedBox(
-                  width: 36,
-                  child: Column(
-                    children: [
-                      _marker(steps[i].state, scheme, status),
-                      if (i < steps.length - 1)
-                        Expanded(
-                          child: Container(
-                            width: 3,
-                            margin: const EdgeInsets.symmetric(vertical: 4),
-                            decoration: BoxDecoration(
-                              color: steps[i].state == FixStepState.done
-                                  ? scheme.primary
-                                  : scheme.outlineVariant,
-                              borderRadius: BorderRadius.circular(2),
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: AppSpace.md),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 6, bottom: 18),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          steps[i].title,
-                          style: theme.textTheme.titleMedium,
-                        ),
-                        if (steps[i].detail case final d? when d != shownAbove)
-                          Text(
-                            d,
-                            maxLines: 3,
-                            overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              color: steps[i].state == FixStepState.failed
-                                  ? scheme.error
-                                  : scheme.onSurfaceVariant,
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-      ],
-    );
-  }
-
-  Widget _marker(FixStepState s, ColorScheme scheme, StatusColors status) {
-    Widget dot(Color bg, IconData icon, Color fg) => Container(
-      width: 32,
-      height: 32,
-      decoration: BoxDecoration(color: bg, shape: BoxShape.circle),
-      child: Icon(icon, size: 20, color: fg),
-    );
-    return switch (s) {
-      FixStepState.done => dot(
-        scheme.primary,
-        Icons.check_rounded,
-        scheme.onPrimary,
-      ),
-      FixStepState.failed => dot(
-        scheme.error,
-        Icons.close_rounded,
-        scheme.onError,
-      ),
-      FixStepState.running => CookieShape(
-        size: 36,
-        color: scheme.primary,
-        spinning: true,
-      ),
-      FixStepState.waiting => CookieShape(
-        size: 36,
-        color: status.warn,
-        child: Icon(
-          Icons.priority_high_rounded,
-          size: 18,
-          color: scheme.surface,
-        ),
-      ),
-    };
-  }
-}
-
-class _LogCard extends StatefulWidget {
-  const _LogCard({required this.lines});
-
-  final List<String> lines;
-
-  @override
-  State<_LogCard> createState() => _LogCardState();
-}
-
-class _LogCardState extends State<_LogCard> {
-  bool _open = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-    final lines = widget.lines;
-    final style = TextStyle(
-      fontFamily: 'monospace',
-      fontSize: 12,
-      height: 1.5,
-      color: scheme.onSurfaceVariant,
-    );
-    return Container(
-      decoration: BoxDecoration(
-        color: scheme.surfaceContainer,
-        borderRadius: BorderRadius.circular(AppRadius.card),
-      ),
-      padding: const EdgeInsets.fromLTRB(
-        AppSpace.lg,
-        AppSpace.xs,
-        AppSpace.xs,
-        AppSpace.lg,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  context.l10n.fixDemoLogTitle,
-                  style: theme.textTheme.titleSmall,
-                ),
-              ),
-              TextButton(
-                onPressed: () => setState(() => _open = !_open),
-                child: Text(
-                  _open
-                      ? context.l10n.fixDemoLogCollapse
-                      : context.l10n.fixDemoLogShowAll,
-                ),
-              ),
-            ],
-          ),
-          if (_open)
-            SizedBox(
-              height: 320,
-              child: ListView.builder(
-                reverse: true,
-                itemCount: lines.length,
-                itemBuilder: (context, i) =>
-                    _line(lines[lines.length - 1 - i], style, scheme),
-              ),
-            )
-          else
-            Text(
-              _tail(lines),
-              style: style,
-              maxLines: 4,
-              overflow: TextOverflow.ellipsis,
-            ),
-        ],
-      ),
-    );
-  }
-
-  /// Lines like `── Запуск скрипта ──` that the controller puts between jobs.
-  static String? _marker(String line) =>
-      line.startsWith('── ') && line.endsWith(' ──') && line.length > 6
-      ? line.substring(3, line.length - 3)
-      : null;
-
-  static String _tail(List<String> lines) {
-    final output = [
-      for (final l in lines)
-        if (_marker(l) == null) l,
-    ];
-    return output.skip(output.length > 4 ? output.length - 4 : 0).join('\n');
-  }
-
-  static Widget _line(String line, TextStyle style, ColorScheme scheme) {
-    final marker = _marker(line);
-    if (marker == null) return Text(line, style: style);
-    return Padding(
-      padding: const EdgeInsets.only(top: AppSpace.md, bottom: AppSpace.xs),
-      child: Text(
-        marker,
-        style: TextStyle(
-          fontSize: 13,
-          fontWeight: FontWeight.w700,
-          color: scheme.primary,
-        ),
-      ),
-    );
-  }
 }

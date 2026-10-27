@@ -11,6 +11,7 @@ import '../core/ui/grouped_list.dart';
 import '../core/ui/wavy_progress.dart';
 import '../features/fix/application/fix_loop.dart';
 import '../features/fix/application/fix_run_controller.dart';
+import '../features/fix/application/fix_run_state.dart';
 import '../features/llm/application/llm_providers.dart';
 import '../features/llm/presentation/llm_texts.dart';
 import '../features/server/application/server_providers.dart';

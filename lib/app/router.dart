@@ -3,6 +3,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../features/fix/presentation/fix_demo_screen.dart';
 import '../features/llm/presentation/llm_settings_screen.dart';
+import '../features/rag/presentation/rag_settings_section.dart';
 import '../features/server/presentation/server_screen.dart';
 import '../features/support/presentation/support_screen.dart';
 import 'app_shell.dart';
@@ -38,7 +39,12 @@ GoRouter router(Ref ref) {
             routes: [page(Routes.server, (_, _) => const ServerScreen())],
           ),
           StatefulShellBranch(
-            routes: [page(Routes.ai, (_, _) => const LlmSettingsScreen())],
+            routes: [
+              page(
+                Routes.ai,
+                (_, _) => const LlmSettingsScreen(footer: RagSettingsSection()),
+              ),
+            ],
           ),
         ],
       ),

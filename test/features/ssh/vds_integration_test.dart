@@ -7,24 +7,12 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:solagent/core/security/secure_store.dart';
 import 'package:solagent/features/ssh/data/dartssh2_connector.dart';
 import 'package:solagent/features/ssh/data/known_hosts_store.dart';
 import 'package:solagent/features/ssh/domain/ssh_failure.dart';
 import 'package:solagent/features/ssh/domain/ssh_target.dart';
 
-class _MemoryStore implements SecureStore {
-  final values = <String, String>{};
-
-  @override
-  Future<String?> read(String key) async => values[key];
-
-  @override
-  Future<void> write(String key, String value) async => values[key] = value;
-
-  @override
-  Future<void> delete(String key) async => values.remove(key);
-}
+import '../../support/memory_store.dart';
 
 void main() {
   final env = Platform.environment;
@@ -40,7 +28,7 @@ void main() {
       SshKeyCredential(File(env['SOLAGENT_VDS_KEY']!).readAsBytesSync());
 
   setUp(() {
-    knownHosts = KnownHostsStore(_MemoryStore());
+    knownHosts = KnownHostsStore(MemoryStore());
     connector = DartSsh2Connector(knownHosts);
     target = SshTarget(
       host: host ?? '',

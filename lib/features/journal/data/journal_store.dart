@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import '../../fix/domain/log_redactor.dart';
 import '../../ssh/domain/i_ssh_client.dart';
+import '../domain/i_journal.dart';
 import '../domain/journal_entry.dart';
 
 /// The app's own log on the user's server: `$HOME/.solagent/journal.jsonl`,
@@ -10,7 +11,7 @@ import '../domain/journal_entry.dart';
 ///
 /// Everything written passes through [LogRedactor]. The file rotates to
 /// `journal.jsonl.1` at 1 MiB, so at most about 2 MiB is kept.
-class JournalStore {
+class JournalStore implements IJournal {
   JournalStore(this._session, this._redactor);
 
   final ISshSession _session;
@@ -22,6 +23,7 @@ class JournalStore {
 
   static const _file = r'"$HOME"/.solagent/journal.jsonl';
 
+  @override
   Future<void> append(JournalEntry entry) async {
     final safe = JournalEntry(
       time: entry.time,
@@ -46,6 +48,7 @@ class JournalStore {
 
   /// The newest [limit] entries, oldest first. Lines that are not valid
   /// entries are skipped; a missing file is an empty journal.
+  @override
   Future<List<JournalEntry>> readRecent({int limit = 30}) async {
     final result = await _session.run(
       'tail -n $_readTailLines $_file 2>/dev/null | tail -c $_readTailBytes; true',

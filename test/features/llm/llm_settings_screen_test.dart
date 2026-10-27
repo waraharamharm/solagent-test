@@ -6,25 +6,14 @@ import 'package:solagent/core/security/secure_store.dart';
 import 'package:solagent/features/llm/domain/llm_preset.dart';
 import 'package:solagent/features/llm/presentation/llm_settings_screen.dart';
 
-class _MemoryStore implements SecureStore {
-  final values = <String, String>{};
+import '../../support/memory_store.dart';
 
-  @override
-  Future<String?> read(String key) async => values[key];
-
-  @override
-  Future<void> write(String key, String value) async => values[key] = value;
-
-  @override
-  Future<void> delete(String key) async => values.remove(key);
-}
-
-Future<_MemoryStore> _pump(WidgetTester tester) async {
+Future<MemoryStore> _pump(WidgetTester tester) async {
   tester.view.physicalSize = const Size(800, 1600);
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.reset);
 
-  final store = _MemoryStore();
+  final store = MemoryStore();
   await tester.pumpWidget(
     ProviderScope(
       overrides: [secureStoreProvider.overrideWithValue(store)],

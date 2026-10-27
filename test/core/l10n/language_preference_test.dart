@@ -5,20 +5,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:solagent/core/l10n/app_locale.dart';
 import 'package:solagent/core/security/secure_store.dart';
 
-class _MemoryStore implements SecureStore {
-  final values = <String, String>{};
-  @override
-  Future<String?> read(String key) async => values[key];
-  @override
-  Future<void> write(String key, String value) async => values[key] = value;
-  @override
-  Future<void> delete(String key) async => values.remove(key);
-}
+import '../../support/memory_store.dart';
 
 void main() {
   final binding = TestWidgetsFlutterBinding.ensureInitialized();
 
-  ProviderContainer make(_MemoryStore store) {
+  ProviderContainer make(MemoryStore store) {
     final c = ProviderContainer(
       overrides: [secureStoreProvider.overrideWithValue(store)],
     );
@@ -33,7 +25,7 @@ void main() {
   });
 
   test('follows the device until the user picks a language', () async {
-    final c = make(_MemoryStore());
+    final c = make(MemoryStore());
     expect(c.read(appLocaleProvider), const Locale('en'));
 
     await c.read(languagePreferenceProvider.notifier).set('ru');
@@ -47,7 +39,7 @@ void main() {
   });
 
   test('the choice is stored and restored; auto clears it', () async {
-    final store = _MemoryStore();
+    final store = MemoryStore();
     final first = make(store);
     await first.read(languagePreferenceProvider.notifier).set('ru');
     expect(store.values['ui.language'], 'ru');
@@ -62,7 +54,7 @@ void main() {
   });
 
   test('an unsupported stored code is ignored', () async {
-    final store = _MemoryStore()..values['ui.language'] = 'xx';
+    final store = MemoryStore()..values['ui.language'] = 'xx';
     final c = make(store);
     c.read(languagePreferenceProvider);
     await Future<void>.delayed(Duration.zero);

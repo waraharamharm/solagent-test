@@ -1,5 +1,5 @@
 import '../../../core/l10n/l10n.dart';
-import '../../llm/application/llm_connection_check.dart';
+import '../../llm/l10n/llm_failure_text.dart';
 import '../application/fix_loop.dart';
 
 /// Localized sentence for a run that ended with [FixOutcome.error]; the

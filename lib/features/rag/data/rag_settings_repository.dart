@@ -2,7 +2,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../core/errors/app_problem.dart';
 import '../../../core/security/secure_store.dart';
-import '../../llm/domain/llm_settings.dart';
+import '../../../core/validation/base_url.dart';
 import '../domain/rag_models.dart';
 
 part 'rag_settings_repository.g.dart';

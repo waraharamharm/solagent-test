@@ -3,20 +3,11 @@ import 'package:local_auth/local_auth.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:solagent/core/errors/app_problem.dart';
 import 'package:solagent/core/security/biometric_gate.dart';
-import 'package:solagent/core/security/secure_store.dart';
 import 'package:solagent/features/server/data/server_repository.dart';
 import 'package:solagent/features/server/domain/server_profile.dart';
 import 'package:solagent/features/ssh/domain/ssh_target.dart';
 
-class _MemoryStore implements SecureStore {
-  final values = <String, String>{};
-  @override
-  Future<String?> read(String key) async => values[key];
-  @override
-  Future<void> write(String key, String value) async => values[key] = value;
-  @override
-  Future<void> delete(String key) async => values.remove(key);
-}
+import '../../support/memory_store.dart';
 
 class _MockAuth extends Mock implements LocalAuthentication {}
 
@@ -48,12 +39,12 @@ void main() {
   });
 
   group('ServerRepository', () {
-    late _MemoryStore store;
+    late MemoryStore store;
     late ServerRepository repo;
     const profile = ServerProfile(host: '10.0.0.1', username: 'root');
 
     setUp(() {
-      store = _MemoryStore();
+      store = MemoryStore();
       repo = ServerRepository(store);
     });
 
@@ -86,7 +77,7 @@ void main() {
     });
 
     test('key pasted with spaces instead of newlines is rewrapped', () {
-      final collapsed =
+      const collapsed =
           '-----BEGIN OPENSSH PRIVATE KEY----- AAAA BBBB\tCCCC '
           '-----END OPENSSH PRIVATE KEY-----';
       expect(

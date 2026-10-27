@@ -99,7 +99,7 @@ class DartSsh2Connector implements ISshConnector {
       if (toPin != null) await _knownHosts.pin(toPin!);
       return _DartSsh2Session(target, client);
     } catch (e) {
-      client?.close();
+      if (client != null) unawaited(client.close());
       throw hostKeyFailure ?? mapSshError(e);
     } finally {
       credential.wipe();
@@ -152,7 +152,7 @@ class _DartSsh2Session implements ISshSession {
 
   @override
   Future<void> close() async {
-    _client.close();
+    unawaited(_client.close());
     try {
       await _client.done;
     } catch (_) {

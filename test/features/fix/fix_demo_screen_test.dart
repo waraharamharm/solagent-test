@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:solagent/core/l10n/l10n.dart';
 import 'package:solagent/core/security/biometric_gate.dart';
 import 'package:solagent/features/fix/application/fix_run_controller.dart';
+import 'package:solagent/features/fix/application/fix_run_state.dart';
 import 'package:solagent/features/fix/domain/fix_models.dart';
 import 'package:solagent/features/fix/presentation/fix_demo_screen.dart';
 

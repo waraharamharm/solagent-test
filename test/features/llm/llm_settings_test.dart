@@ -2,23 +2,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:solagent/core/errors/app_problem.dart';
 import 'package:solagent/core/security/secure_store.dart';
+import 'package:solagent/core/validation/base_url.dart';
 import 'package:solagent/features/llm/application/llm_providers.dart';
 import 'package:solagent/features/llm/data/llm_settings_repository.dart';
 import 'package:solagent/features/llm/domain/llm_preset.dart';
 import 'package:solagent/features/llm/domain/llm_settings.dart';
 
-class _MemoryStore implements SecureStore {
-  final values = <String, String>{};
-
-  @override
-  Future<String?> read(String key) async => values[key];
-
-  @override
-  Future<void> write(String key, String value) async => values[key] = value;
-
-  @override
-  Future<void> delete(String key) async => values.remove(key);
-}
+import '../../support/memory_store.dart';
 
 void main() {
   group('validateBaseUrl', () {
@@ -53,11 +43,11 @@ void main() {
   });
 
   group('LlmSettingsRepository', () {
-    late _MemoryStore store;
+    late MemoryStore store;
     late LlmSettingsRepository repo;
 
     setUp(() {
-      store = _MemoryStore();
+      store = MemoryStore();
       repo = LlmSettingsRepository(store);
     });
 
@@ -109,11 +99,11 @@ void main() {
   });
 
   group('LlmSettingsController', () {
-    late _MemoryStore store;
+    late MemoryStore store;
     late ProviderContainer container;
 
     setUp(() {
-      store = _MemoryStore();
+      store = MemoryStore();
       container = ProviderContainer(
         overrides: [secureStoreProvider.overrideWithValue(store)],
       );

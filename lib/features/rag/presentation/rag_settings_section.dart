@@ -9,17 +9,7 @@ import '../../../core/ui/grouped_list.dart';
 import '../../../core/ui/wavy_progress.dart';
 import '../application/rag_providers.dart';
 import '../domain/rag_models.dart';
-
-String describeRagFailure(AppLocalizations l10n, RagFailure failure) =>
-    switch (failure) {
-      RagUnauthorized() => l10n.ragErrUnauthorized,
-      RagRateLimited(:final retryAfterSeconds) => l10n.ragErrRateLimited(
-        retryAfterSeconds ?? 60,
-      ),
-      RagNetworkFailure() => l10n.ragErrNetwork,
-      RagServerFailure(:final statusCode) => l10n.ragErrServer(statusCode ?? 0),
-      RagBadResponse() => l10n.ragErrBadResponse,
-    };
+import '../l10n/rag_failure_text.dart';
 
 /// Address, access key and a connection check for the knowledge base, shown
 /// at the bottom of the AI screen.

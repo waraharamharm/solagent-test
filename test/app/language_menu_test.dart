@@ -6,15 +6,7 @@ import 'package:solagent/core/l10n/app_locale.dart';
 import 'package:solagent/core/l10n/l10n.dart';
 import 'package:solagent/core/security/secure_store.dart';
 
-class _MemoryStore implements SecureStore {
-  final values = <String, String>{};
-  @override
-  Future<String?> read(String key) async => values[key];
-  @override
-  Future<void> write(String key, String value) async => values[key] = value;
-  @override
-  Future<void> delete(String key) async => values.remove(key);
-}
+import '../support/memory_store.dart';
 
 class _App extends ConsumerWidget {
   const _App();
@@ -39,7 +31,7 @@ void main() {
     binding.platformDispatcher.localesTestValue = const [Locale('en')];
     addTearDown(binding.platformDispatcher.clearLocalesTestValue);
 
-    final store = _MemoryStore();
+    final store = MemoryStore();
     await tester.pumpWidget(
       ProviderScope(
         overrides: [secureStoreProvider.overrideWithValue(store)],

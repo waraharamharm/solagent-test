@@ -177,7 +177,7 @@ void main() {
     for (final entry in <String, Object>{
       'not an object': ['x'],
       'no choices': {'id': '1'},
-      'empty choices': {'choices': []},
+      'empty choices': {'choices': <Object?>[]},
       'content not string': {
         'choices': [
           {
@@ -312,7 +312,7 @@ void main() {
           requestOptions: options,
           reason: 'Bearer $_apiKey',
         ),
-        (_, _) => _json({'choices': []}),
+        (_, _) => _json({'choices': <Object?>[]}),
       ];
       for (final handler in cases) {
         final t = _build(handler);

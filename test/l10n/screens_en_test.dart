@@ -8,6 +8,7 @@ import 'package:solagent/core/l10n/l10n.dart';
 import 'package:solagent/core/security/biometric_gate.dart';
 import 'package:solagent/core/security/secure_store.dart';
 import 'package:solagent/features/fix/application/fix_run_controller.dart';
+import 'package:solagent/features/fix/application/fix_run_state.dart';
 import 'package:solagent/features/fix/domain/fix_models.dart';
 import 'package:solagent/features/fix/presentation/fix_demo_screen.dart';
 import 'package:solagent/features/llm/presentation/llm_settings_screen.dart';
@@ -15,18 +16,7 @@ import 'package:solagent/features/server/data/server_repository.dart';
 import 'package:solagent/features/server/domain/server_profile.dart';
 import 'package:solagent/features/server/presentation/server_screen.dart';
 
-class _MemoryStore implements SecureStore {
-  final values = <String, String>{};
-
-  @override
-  Future<String?> read(String key) async => values[key];
-
-  @override
-  Future<void> write(String key, String value) async => values[key] = value;
-
-  @override
-  Future<void> delete(String key) async => values.remove(key);
-}
+import '../support/memory_store.dart';
 
 class _OpenGate implements IBiometricGate {
   @override
@@ -68,7 +58,7 @@ void _expectNoCyrillic(WidgetTester tester) {
 Future<void> _pump(
   WidgetTester tester,
   Widget home, {
-  _MemoryStore? store,
+  MemoryStore? store,
   FixRunState run = const FixRunState(),
   bool animated = false,
 }) async {
@@ -78,7 +68,7 @@ Future<void> _pump(
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
-        secureStoreProvider.overrideWithValue(store ?? _MemoryStore()),
+        secureStoreProvider.overrideWithValue(store ?? MemoryStore()),
         biometricGateProvider.overrideWithValue(_OpenGate()),
         fixRunProvider.overrideWith(() => _FakeRun(run)),
       ],
@@ -178,7 +168,7 @@ void main() {
   });
 
   testWidgets('ServerScreen: saved server', (tester) async {
-    final store = _MemoryStore();
+    final store = MemoryStore();
     await ServerRepository(
       store,
     ).save(const ServerProfile(host: '10.0.0.1', username: 'root'), 'secret');

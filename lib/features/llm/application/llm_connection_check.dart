@@ -1,9 +1,9 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../core/l10n/app_locale.dart';
-import '../../../core/l10n/l10n.dart';
 import '../domain/chat_message.dart';
 import '../domain/llm_failure.dart';
+import '../l10n/llm_failure_text.dart';
 import 'llm_providers.dart';
 
 part 'llm_connection_check.g.dart';
@@ -17,20 +17,6 @@ class LlmCheckError implements Exception {
 
   @override
   String toString() => text;
-}
-
-/// Plain localized line, then the technical text with the HTTP code and the
-/// provider's own message, so the user can search it or send it to support.
-String describeLlmFailure(AppLocalizations l10n, LlmFailure f) {
-  final plain = switch (f) {
-    LlmUnauthorized(statusCode: 403) => l10n.llmErrForbidden,
-    LlmUnauthorized() => l10n.llmErrUnauthorized,
-    LlmRateLimited() => l10n.llmErrRateLimited,
-    LlmNetworkFailure() => l10n.llmErrNetwork,
-    LlmServerFailure() => l10n.llmErrServer,
-    LlmBadResponse() => l10n.llmErrBadResponse,
-  };
-  return '$plain\n${f.message}';
 }
 
 /// State: null = not run yet, data = trimmed model reply.

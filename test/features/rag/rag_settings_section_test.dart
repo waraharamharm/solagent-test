@@ -7,15 +7,7 @@ import 'package:solagent/features/rag/application/rag_providers.dart';
 import 'package:solagent/features/rag/domain/rag_models.dart';
 import 'package:solagent/features/rag/presentation/rag_settings_section.dart';
 
-class _MemoryStore implements SecureStore {
-  final values = <String, String>{};
-  @override
-  Future<String?> read(String key) async => values[key];
-  @override
-  Future<void> write(String key, String value) async => values[key] = value;
-  @override
-  Future<void> delete(String key) async => values.remove(key);
-}
+import '../../support/memory_store.dart';
 
 class _Service implements IRagService {
   _Service(this.result);
@@ -31,7 +23,7 @@ class _Service implements IRagService {
 
 Future<void> _pump(
   WidgetTester tester,
-  _MemoryStore store, {
+  MemoryStore store, {
   Object? result,
   String locale = 'en',
 }) async {
@@ -62,7 +54,7 @@ void main() {
   testWidgets('key is stored, field disappears, deletion needs confirmation', (
     tester,
   ) async {
-    final store = _MemoryStore();
+    final store = MemoryStore();
     await _pump(tester, store);
     expect(find.text('Knowledge base'), findsOneWidget);
     expect(find.text('https://rag.mtoper.ru'), findsOneWidget);
@@ -91,7 +83,7 @@ void main() {
   });
 
   testWidgets('an insecure address is refused and not saved', (tester) async {
-    final store = _MemoryStore();
+    final store = MemoryStore();
     await _pump(tester, store);
     await tester.enterText(
       find.widgetWithText(TextField, 'Server address'),
@@ -104,7 +96,7 @@ void main() {
   });
 
   testWidgets('the check is disabled until a key exists', (tester) async {
-    await _pump(tester, _MemoryStore());
+    await _pump(tester, MemoryStore());
     final button = tester.widget<OutlinedButton>(
       find.widgetWithText(OutlinedButton, 'Check knowledge base'),
     );
@@ -112,7 +104,7 @@ void main() {
   });
 
   testWidgets('check shows the passage count', (tester) async {
-    final store = _MemoryStore()..values['rag.apiKey'] = 'sol_abc';
+    final store = MemoryStore()..values['rag.apiKey'] = 'sol_abc';
     await _pump(
       tester,
       store,
@@ -124,7 +116,7 @@ void main() {
   });
 
   testWidgets('failures are shown in the app language', (tester) async {
-    final store = _MemoryStore()..values['rag.apiKey'] = 'sol_abc';
+    final store = MemoryStore()..values['rag.apiKey'] = 'sol_abc';
     await _pump(
       tester,
       store,

@@ -8,17 +8,17 @@ part of 'fix_run_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// Runs [FixLoop] against the saved server. The host key must already be
-/// pinned (done on the server screen); a new key is refused here.
+/// Runs [FixLoop] against the saved server and turns its events into what the
+/// screens show. Opening the server is [FixSessionFactory]'s job.
 
 @ProviderFor(FixRun)
 final fixRunProvider = FixRunProvider._();
 
-/// Runs [FixLoop] against the saved server. The host key must already be
-/// pinned (done on the server screen); a new key is refused here.
+/// Runs [FixLoop] against the saved server and turns its events into what the
+/// screens show. Opening the server is [FixSessionFactory]'s job.
 final class FixRunProvider extends $NotifierProvider<FixRun, FixRunState> {
-  /// Runs [FixLoop] against the saved server. The host key must already be
-  /// pinned (done on the server screen); a new key is refused here.
+  /// Runs [FixLoop] against the saved server and turns its events into what the
+  /// screens show. Opening the server is [FixSessionFactory]'s job.
   FixRunProvider._()
     : super(
         from: null,
@@ -46,10 +46,10 @@ final class FixRunProvider extends $NotifierProvider<FixRun, FixRunState> {
   }
 }
 
-String _$fixRunHash() => r'ebe854fc3be4aaa5b860663fa27d4a83fa252ae0';
+String _$fixRunHash() => r'9263941ac7684779eeea9027e97e15f8b4d60d69';
 
-/// Runs [FixLoop] against the saved server. The host key must already be
-/// pinned (done on the server screen); a new key is refused here.
+/// Runs [FixLoop] against the saved server and turns its events into what the
+/// screens show. Opening the server is [FixSessionFactory]'s job.
 
 abstract class _$FixRun extends $Notifier<FixRunState> {
   FixRunState build();
